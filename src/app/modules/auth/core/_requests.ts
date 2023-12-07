@@ -1,19 +1,31 @@
 import axios from 'axios'
-import {AuthModel, UserModel} from './_models'
+import {UserModel, NewAuthModel} from './_models'
 
 const API_URL = process.env.REACT_APP_API_URL
 
-export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/verify_token`
-export const LOGIN_URL = `${API_URL}/login`
+export const GET_USER_BY_ACCESSTOKEN_URL = `${API_URL}/api/auth/user`
+export const LOGIN_URL = `${API_URL}/api/auth/login`
 export const REGISTER_URL = `${API_URL}/register`
 export const REQUEST_PASSWORD_URL = `${API_URL}/forgot_password`
 
-// Server should return AuthModel
-export function login(email: string, password: string) {
-  return axios.post<AuthModel>(LOGIN_URL, {
-    email,
+// Server should return NewAuthModel
+export function login(username: string, password: string) {
+  return axios.post<NewAuthModel>(LOGIN_URL, {
+    username,
     password,
   })
+}
+
+export const tokenConfig = (token) => {
+  const config = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  }
+  if (token) {
+    config.headers['Authorization'] = `Token ${token}`
+  }
+  return config
 }
 
 // Server should return AuthModel
@@ -41,7 +53,20 @@ export function requestPassword(email: string) {
 }
 
 export function getUserByToken(token: string) {
-  return axios.post<UserModel>(GET_USER_BY_ACCESSTOKEN_URL, {
-    api_token: token,
-  })
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  axios.interceptors.request.use(
+    (request) => {
+      console.log('Starting Request', request)
+      return request
+    },
+    (error) => {
+      // Do something with request error
+      return Promise.reject(error)
+    }
+  )
+  console.log(headers)
+  return axios.get<UserModel>(GET_USER_BY_ACCESSTOKEN_URL, {headers})
 }

@@ -5,17 +5,17 @@ import {Dropdown1, Search} from '../../../../partials'
 const projects: ReadonlyArray<{image: string; title: string; link: string}> = [
   {
     image: '/media/svg/brand-logos/bebo.svg',
-    title: 'Briviba SaaS',
+    title: 'Invoices',
     link: 'By James',
   },
   {
     image: '/media/svg/brand-logos/vimeo.svg',
-    title: 'Vine Quick Reports',
+    title: 'Inventory',
     link: 'By Andres',
   },
   {
     image: '/media/svg/brand-logos/kickstarter.svg',
-    title: 'KC Account CRM',
+    title: 'Customers',
     link: 'By Keenthemes',
   },
   {
@@ -76,7 +76,7 @@ const ProjectsTab = () => {
           {projects.map((p) => (
             <Link
               key={p.link}
-              to='/crafted/pages/profile/projects'
+              to='/crafted/widgets/tables'
               className='custom-list d-flex align-items-center px-5 py-4'
             >
               {/*begin::Symbol*/}

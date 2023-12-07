@@ -66,7 +66,7 @@ const WidgetsPage = () => {
           path='tables'
           element={
             <>
-              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Tables</PageTitle>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Invoices</PageTitle>
               <Tables />
             </>
           }

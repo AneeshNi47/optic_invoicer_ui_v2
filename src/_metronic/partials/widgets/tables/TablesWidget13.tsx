@@ -1,12 +1,29 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import {KTIcon} from '../../../helpers'
+import {useAuth} from '../../../../app/modules/auth'
+import {getInvoices} from '../../../../app/modules/invoices/_requests'
+import {InvoiceModel} from '../../../../app/modules/invoices/_models'
 
 type Props = {
   className: string
 }
 
 const TablesWidget13: React.FC<Props> = ({className}) => {
+  const {auth} = useAuth()
+  const [invoices, setInvoices] = useState<InvoiceModel[]>([])
+
+  useEffect(() => {
+    if (auth?.token) {
+      getInvoices(auth.token)
+        .then((response) => {
+          setInvoices(response.data)
+        })
+        .catch((error) => {
+          // Handle the error
+        })
+    }
+  }, [auth?.token])
   return (
     <div className={`card ${className}`}>
       {/* begin::Header */}
@@ -150,59 +167,71 @@ const TablesWidget13: React.FC<Props> = ({className}) => {
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              <tr>
-                <td>
-                  <div className='form-check form-check-sm form-check-custom form-check-solid'>
-                    <input className='form-check-input widget-13-check' type='checkbox' value='1' />
-                  </div>
-                </td>
-                <td>
-                  <a href='#' className='text-dark fw-bold text-hover-primary fs-6'>
-                    56037-XDER
-                  </a>
-                </td>
-                <td>
-                  <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                    Brasil
-                  </a>
-                  <span className='text-muted fw-semibold text-muted d-block fs-7'>Code: PH</span>
-                </td>
-                <td>
-                  <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                    05/28/2020
-                  </a>
-                  <span className='text-muted fw-semibold text-muted d-block fs-7'>Code: Paid</span>
-                </td>
-                <td>
-                  <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                    Intertico
-                  </a>
-                  <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                    Web, UI/UX Design
-                  </span>
-                </td>
-                <td className='text-dark fw-bold text-hover-primary fs-6'>$3560</td>
-                <td>
-                  <span className='badge badge-light-success'>Approved</span>
-                </td>
-                <td className='text-end'>
-                  <a
-                    href='#'
-                    className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                  >
-                    <KTIcon iconName='switch' className='fs-3' />
-                  </a>
-                  <a
-                    href='#'
-                    className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                  >
-                    <KTIcon iconName='pencil' className='fs-3' />
-                  </a>
-                  <a href='#' className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm'>
-                    <KTIcon iconName='trash' className='fs-3' />
-                  </a>
-                </td>
-              </tr>
+              {invoices.map((invoice, index) => (
+                <tr key={index}>
+                  <td>
+                    <div className='form-check form-check-sm form-check-custom form-check-solid'>
+                      <input
+                        className='form-check-input widget-13-check'
+                        type='checkbox'
+                        value='1'
+                      />
+                    </div>
+                  </td>
+                  <td>
+                    <a href='#' className='text-dark fw-bold text-hover-primary fs-6'>
+                      {invoice.invoice_number}
+                    </a>
+                  </td>
+                  <td>
+                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
+                      {invoice.customer.first_name}
+                    </a>
+                    <span className='text-muted fw-semibold text-muted d-block fs-7'>Code: PH</span>
+                  </td>
+                  <td>
+                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
+                      {invoice.created_on}
+                    </a>
+                    <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                      Code: Paid
+                    </span>
+                  </td>
+                  <td>
+                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
+                      Intertico
+                    </a>
+                    <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                      Web, UI/UX Design
+                    </span>
+                  </td>
+                  <td className='text-dark fw-bold text-hover-primary fs-6'>{invoice.total}</td>
+                  <td>
+                    <span className='badge badge-light-success'>{invoice.status}</span>
+                  </td>
+                  <td className='text-end'>
+                    <a
+                      href='#'
+                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                    >
+                      <KTIcon iconName='switch' className='fs-3' />
+                    </a>
+                    <a
+                      href='#'
+                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                    >
+                      <KTIcon iconName='pencil' className='fs-3' />
+                    </a>
+                    <a
+                      href='#'
+                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm'
+                    >
+                      <KTIcon iconName='trash' className='fs-3' />
+                    </a>
+                  </td>
+                </tr>
+              ))}
+              {/*
               <tr>
                 <td>
                   <div className='form-check form-check-sm form-check-custom form-check-solid'>
@@ -412,7 +441,7 @@ const TablesWidget13: React.FC<Props> = ({className}) => {
                     <KTIcon iconName='trash' className='fs-3' />
                   </a>
                 </td>
-              </tr>
+            </tr>*/}
             </tbody>
             {/* end::Table body */}
           </table>

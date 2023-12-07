@@ -3,11 +3,10 @@ import {Outlet, useLocation} from 'react-router-dom'
 import {AsideDefault} from './components/aside/AsideDefault'
 import {Footer} from './components/Footer'
 import {HeaderWrapper} from './components/header/HeaderWrapper'
-import {RightToolbar} from '../partials/layout/RightToolbar'
 import {ScrollTop} from './components/ScrollTop'
 import {Content} from './components/Content'
 import {PageDataProvider} from './core'
-import {ActivityDrawer, DrawerMessenger, InviteUsers, UpgradePlan} from '../partials'
+import {ActivityDrawer, DrawerMessenger} from '../partials'
 import {MenuComponent} from '../assets/ts/components'
 
 const MasterLayout = () => {
@@ -45,14 +44,9 @@ const MasterLayout = () => {
 
       {/* begin:: Drawers */}
       <ActivityDrawer />
-      <RightToolbar />
       <DrawerMessenger />
       {/* end:: Drawers */}
 
-      {/* begin:: Modals */}
-      <InviteUsers />
-      <UpgradePlan />
-      {/* end:: Modals */}
       <ScrollTop />
     </PageDataProvider>
   )

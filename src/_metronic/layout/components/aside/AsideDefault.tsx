@@ -6,7 +6,6 @@ import clsx from 'clsx'
 import {useLayout} from '../../core'
 import {KTIcon, toAbsoluteUrl} from '../../../helpers'
 import {AsideTabs} from './AsideTabs'
-import {AsideFooter} from './AsideFooter'
 import {TabsBase} from './Tabs/_TabsBase'
 
 const AsideDefault = () => {
@@ -46,7 +45,7 @@ const AsideDefault = () => {
           <AsideTabs link={link} setLink={setLink} />
         </div>
         {/* end::Nav */}
-        <AsideFooter />
+        {/*<AsideFooter />*/}
       </div>
       {/* end::Primary */}
       {config.aside.secondaryDisplay && (

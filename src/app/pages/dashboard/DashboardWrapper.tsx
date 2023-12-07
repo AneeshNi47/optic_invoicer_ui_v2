@@ -1,4 +1,4 @@
-import {useEffect} from 'react'
+import {useEffect, useState} from 'react'
 import {useIntl} from 'react-intl'
 import {PageLink, PageTitle} from '../../../_metronic/layout/core'
 import {
@@ -13,6 +13,7 @@ import {
   TablesWidget5,
   TablesWidget9,
 } from '../../../_metronic/partials/widgets'
+import {SelectLocationModal} from '../../../_metronic/partials'
 
 const dashboardBreadCrumbs: Array<PageLink> = [
   {
@@ -32,8 +33,19 @@ const DashboardPage = () => {
     }
   }, [])
 
+  const [showModal, setShowModal] = useState(false)
+  const [location, setLocation] = useState('')
+
+  const handleCloseModal = () => setShowModal(false)
+
   return (
     <>
+      <button onClick={() => setShowModal(true)}>Open Select Location</button>
+      <SelectLocationModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        data={{location, setLocation}}
+      />
       {/* begin::Row */}
       <div className='row gy-5 g-xl-8'>
         {/* begin::Col */}

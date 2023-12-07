@@ -1,13 +1,13 @@
 import {FC, useState, useEffect, createContext, useContext, Dispatch, SetStateAction} from 'react'
 import {LayoutSplashScreen} from '../../../../_metronic/layout/core'
-import {AuthModel, UserModel} from './_models'
+import {NewAuthModel, UserModel} from './_models'
 import * as authHelper from './AuthHelpers'
 import {getUserByToken} from './_requests'
 import {WithChildren} from '../../../../_metronic/helpers'
 
 type AuthContextProps = {
-  auth: AuthModel | undefined
-  saveAuth: (auth: AuthModel | undefined) => void
+  auth: NewAuthModel | undefined
+  saveAuth: (auth: NewAuthModel | undefined) => void
   currentUser: UserModel | undefined
   setCurrentUser: Dispatch<SetStateAction<UserModel | undefined>>
   logout: () => void
@@ -28,9 +28,9 @@ const useAuth = () => {
 }
 
 const AuthProvider: FC<WithChildren> = ({children}) => {
-  const [auth, setAuth] = useState<AuthModel | undefined>(authHelper.getAuth())
+  const [auth, setAuth] = useState<NewAuthModel | undefined>(authHelper.getAuth())
   const [currentUser, setCurrentUser] = useState<UserModel | undefined>()
-  const saveAuth = (auth: AuthModel | undefined) => {
+  const saveAuth = (auth: NewAuthModel | undefined) => {
     setAuth(auth)
     if (auth) {
       authHelper.setAuth(auth)
@@ -75,8 +75,8 @@ const AuthInit: FC<WithChildren> = ({children}) => {
       }
     }
 
-    if (auth && auth.api_token) {
-      requestUser(auth.api_token)
+    if (auth && auth.token) {
+      requestUser(auth.token)
     } else {
       logout()
       setShowSplashScreen(false)
