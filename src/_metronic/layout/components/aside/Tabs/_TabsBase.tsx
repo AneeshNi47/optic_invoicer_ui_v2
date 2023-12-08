@@ -7,6 +7,8 @@ import {ProjectsTab} from './ProjectsTab'
 import {SubscriptionsTab} from './SubscriptionsTab'
 import {TasksTab} from './TasksTab'
 import {AsideFooter} from '../AsideFooter'
+import {AdminTab} from './AdminTab'
+import {StaffTab} from './StaffTab'
 
 type Props = {
   link: string
@@ -14,8 +16,10 @@ type Props = {
 
 const SelectedTab: FC<Props> = ({link}) => {
   switch (link) {
-    case 'projects':
-      return <ProjectsTab />
+    case 'admin':
+      return <AdminTab />
+    case 'staff':
+      return <StaffTab />
     case 'menu':
       return <MenuTab />
     case 'subscription':
@@ -27,7 +31,7 @@ const SelectedTab: FC<Props> = ({link}) => {
     case 'authors':
       return <AuthorsTab />
     default:
-      return <ProjectsTab />
+      return <StaffTab />
   }
 }
 

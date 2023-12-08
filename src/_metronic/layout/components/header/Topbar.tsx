@@ -35,21 +35,6 @@ const Topbar: FC = () => {
       </div>
       {/* end::Invite user */}
 
-      {/* begin::Create app */}
-      <div className='d-flex ms-3'>
-        <a
-          href='#'
-          className='btn btn-flex flex-center bg-body btn-color-gray-700 btn-active-color-primary w-40px w-md-auto h-40px px-0 px-md-6'
-          id='kt_toolbar_primary_button'
-          data-bs-toggle='modal'
-          data-bs-target='#kt_modal_create_app'
-        >
-          <KTIcon iconName='document' className='fs-2 text-primary me-0 me-md-2' />
-          <span className='d-none d-md-inline'>New App</span>
-        </a>
-      </div>
-      {/* end::Create app */}
-
       {/* begin::Theme mode */}
       <div className='d-flex align-items-center  ms-3'>
         <ThemeModeSwitcher toggleBtnClass=' flex-center bg-body btn-color-gray-600 btn-active-color-primary h-40px' />

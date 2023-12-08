@@ -2,25 +2,20 @@ import {Link} from 'react-router-dom'
 import {KTIcon, toAbsoluteUrl} from '../../../../helpers'
 import {Dropdown1, Search} from '../../../../partials'
 
-const projects: ReadonlyArray<{key: string; image: string; title: string}> = [
+const adminOptions: ReadonlyArray<{key: string; image: string; title: string}> = [
   {
-    key: 'invoices',
-    image: '/media/svg/brand-logos/bebo.svg',
-    title: 'Invoices',
+    key: 'organizations',
+    image: '/media/icons/duotune/finance/fin001.svg',
+    title: 'Organizations',
   },
   {
-    key: 'inventory',
-    image: '/media/svg/brand-logos/vimeo.svg',
-    title: 'Inventory',
-  },
-  {
-    key: 'customers',
-    image: '/media/svg/brand-logos/kickstarter.svg',
-    title: 'Customers',
+    key: 'reports',
+    image: '/media/icons/duotune/finance/fin002.svg',
+    title: 'Reports',
   },
 ]
 
-const ProjectsTab = () => {
+const AdminTab = () => {
   return (
     <div className='m-0'>
       {/* begin::Toolbar */}
@@ -53,7 +48,7 @@ const ProjectsTab = () => {
 
         {/*begin::Items*/}
         <div className='mb-10'>
-          {projects.map((p) => (
+          {adminOptions.map((p) => (
             <Link
               key={p.key}
               to='/organization/invoices'
@@ -88,4 +83,4 @@ const ProjectsTab = () => {
   )
 }
 
-export {ProjectsTab}
+export {AdminTab}
