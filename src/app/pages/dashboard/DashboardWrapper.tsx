@@ -33,19 +33,8 @@ const DashboardPage = () => {
     }
   }, [])
 
-  const [showModal, setShowModal] = useState(false)
-  const [location, setLocation] = useState('')
-
-  const handleCloseModal = () => setShowModal(false)
-
   return (
     <>
-      <button onClick={() => setShowModal(true)}>Open Select Location</button>
-      <SelectLocationModal
-        show={showModal}
-        handleClose={handleCloseModal}
-        data={{location, setLocation}}
-      />
       {/* begin::Row */}
       <div className='row gy-5 g-xl-8'>
         {/* begin::Col */}

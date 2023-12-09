@@ -2,8 +2,8 @@
 import React, {useEffect, useState} from 'react'
 import {KTIcon} from '../../../helpers'
 import {useAuth} from '../../../../app/modules/auth'
-import {getInvoices} from '../../../../app/modules/invoices/_requests'
-import {InvoiceModel} from '../../../../app/modules/invoices/_models'
+import {getInvoices} from '../../../../app/modules/invoicerModules/invoices/_requests'
+import {InvoiceModel} from '../../../../app/modules/invoicerModules/invoices/_models'
 
 type Props = {
   className: string

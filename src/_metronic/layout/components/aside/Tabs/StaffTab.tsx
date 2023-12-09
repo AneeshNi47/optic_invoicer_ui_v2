@@ -2,7 +2,7 @@ import {Link} from 'react-router-dom'
 import {KTIcon, toAbsoluteUrl} from '../../../../helpers'
 import {Dropdown1, Search} from '../../../../partials'
 
-const projects: ReadonlyArray<{key: string; image: string; title: string}> = [
+const staffOptions: ReadonlyArray<{key: string; image: string; title: string}> = [
   {
     key: 'invoices',
     image: '/media/svg/brand-logos/bebo.svg',
@@ -20,7 +20,7 @@ const projects: ReadonlyArray<{key: string; image: string; title: string}> = [
   },
 ]
 
-const ProjectsTab = () => {
+const StaffTab = () => {
   return (
     <div className='m-0'>
       {/* begin::Toolbar */}
@@ -53,10 +53,10 @@ const ProjectsTab = () => {
 
         {/*begin::Items*/}
         <div className='mb-10'>
-          {projects.map((p) => (
+          {staffOptions.map((p) => (
             <Link
               key={p.key}
-              to='/organization/invoices'
+              to={`/organization/${p.key}`}
               className='custom-list d-flex align-items-center px-5 py-4'
             >
               {/*begin::Symbol*/}
@@ -88,4 +88,4 @@ const ProjectsTab = () => {
   )
 }
 
-export {ProjectsTab}
+export {StaffTab}

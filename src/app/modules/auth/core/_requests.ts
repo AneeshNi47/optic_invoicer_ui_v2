@@ -57,16 +57,5 @@ export function getUserByToken(token: string) {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  axios.interceptors.request.use(
-    (request) => {
-      console.log('Starting Request', request)
-      return request
-    },
-    (error) => {
-      // Do something with request error
-      return Promise.reject(error)
-    }
-  )
-  console.log(headers)
   return axios.get<UserModel>(GET_USER_BY_ACCESSTOKEN_URL, {headers})
 }

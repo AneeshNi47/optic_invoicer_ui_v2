@@ -6,6 +6,7 @@ import {DashboardWrapper} from '../pages/dashboard/DashboardWrapper'
 import {MenuTestPage} from '../pages/MenuTestPage'
 import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
+import InvoicePage from '../modules/invoicerModules/InvoicerPageRoutes'
 
 const PrivateRoutes = () => {
   const ProfilePage = lazy(() => import('../modules/profile/ProfilePage'))
@@ -45,6 +46,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <WidgetsPage />
+            </SuspensedView>
+          }
+        />
+        <Route
+          path='/organization/*'
+          element={
+            <SuspensedView>
+              <InvoicePage />
             </SuspensedView>
           }
         />
