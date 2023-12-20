@@ -11,19 +11,19 @@ type Props = {
 
 const TablesWidget13: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [invoices, setInvoices] = useState<InvoiceModel[]>([])
+  const [invoices, setInvoices] = useState<InvoiceModel | any>({})
 
-  useEffect(() => {
-    if (auth?.token) {
-      getInvoices(auth.token)
-        .then((response) => {
-          setInvoices(response.data)
-        })
-        .catch((error) => {
-          // Handle the error
-        })
-    }
-  }, [auth?.token])
+  // useEffect(() => {
+  //   if (auth?.token) {
+  //     getInvoices(auth.token)
+  //       .then((response) => {
+  //         setInvoices(response.data)
+  //       })
+  //       .catch((error) => {
+  //         // Handle the error
+  //       })
+  //   }
+  // }, [auth?.token])
   return (
     <div className={`card ${className}`}>
       {/* begin::Header */}
@@ -167,7 +167,7 @@ const TablesWidget13: React.FC<Props> = ({className}) => {
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              {invoices.map((invoice, index) => (
+              {invoices.results && invoices.results.map((invoice, index) => (
                 <tr key={index}>
                   <td>
                     <div className='form-check form-check-sm form-check-custom form-check-solid'>

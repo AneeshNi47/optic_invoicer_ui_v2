@@ -1,4 +1,5 @@
 export interface Customer {
+  is_active: Customer
   id: number
   phone: string
   email: string
@@ -6,7 +7,6 @@ export interface Customer {
   last_name: string
   theme_mode: string
   gender: string
-  is_active: boolean
   created_on: string
   updated_on: string
   user: null // Update with correct type if applicable
@@ -16,7 +16,7 @@ export interface Customer {
 }
 
 export interface Prescription {
-  id: number
+ id: number
   customer: number
   left_sphere: number
   right_sphere: number
@@ -85,11 +85,18 @@ export interface InventoryItem {
 }
 
 export interface InvoiceModel {
+  next: string,
+  previous: string,
+  results: Array<InvidualInvoice>
+ 
+}
+
+export interface InvidualInvoice {
   id: string
   customer: Customer
   prescription: Prescription
   invoice_payment: InvoicePayment[]
-  inventory_items: InventoryItem[]
+  inventory_items: Array<InventoryItem>
   invoice_number: string
   date: string
   remarks: string
@@ -99,8 +106,9 @@ export interface InvoiceModel {
   advance: string
   advance_payment_mode: string
   tax_percentage: string
-  balance: string
   status: string
+  balance: string
+  
   is_active: boolean
   is_taxable: boolean
   created_on: string

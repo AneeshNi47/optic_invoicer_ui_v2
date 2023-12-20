@@ -1,35 +1,37 @@
 import React, {useState, useEffect} from 'react'
 import {Modal, Button} from 'react-bootstrap'
-import {KTIcon} from '../../../helpers'
+import {KTIcon} from '../../../helpers';
+import { AddInventoryItem } from '../../../../app/modules/invoicerModules/inventory/_models';
+import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory';
+import AddInvoice from '../../../../app/modules/invoicerModules/invoices/AddInvoice';
+import AddOrganizations from '../../../../app/modules/adminModules/organizations/AddOrganization';
+
 
 // Add any additional types you need
 type Props = {
   show: boolean
   handleClose: () => void
+  currentPath: string
   // Add additional props as required
 }
 
-const CreateInvoiceModal: React.FC<Props> = ({show, handleClose /*, other props */}) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(false)
-  // ... Define other states
-
-  // Equivalent to componentDidMount and componentDidUpdate:
-  useEffect(
-    () => {
-      // Replace componentDidMount logic here
-      // Replace componentDidUpdate logic here
-    },
-    [
-      /* dependencies */
-    ]
-  )
-
-  // Event handlers and other functions
-  const handleAddItem = () => {
-    // Logic for adding item
+const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, currentPath  /*, other props */}) => {
+  const [selectedCustomer, setSelectedCustomer] = useState(false);
+  let title: string = "";
+  let componentToRender: JSX.Element = <></>;
+  
+  if(currentPath == "/organization/inventory" ) {
+    title="Add Inventory";
+    componentToRender =<AddInventory/>
+  } else if (currentPath == "/organization/invoices") {
+    title="Add Invoice";
+    componentToRender = <AddInvoice/>
+  } else if(currentPath == "/admin/organizations") {
+    title= "Add Organization"
+    componentToRender= <AddOrganizations/>
   }
 
-  // Other functions...
+  
 
   return (
     <Modal
@@ -45,16 +47,18 @@ const CreateInvoiceModal: React.FC<Props> = ({show, handleClose /*, other props 
       // ... other modal props
     >
       <Modal.Header closeButton>
-        <Modal.Title>Add Invoice</Modal.Title>
+        <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>{/* Modal content goes here */}</Modal.Body>
+      <Modal.Body>
+      {componentToRender}
+      </Modal.Body>
       <Modal.Footer>
         <Button variant='secondary' onClick={handleClose}>
           Close
         </Button>
-        <Button variant='primary' onClick={handleAddItem}>
+        {/* <Button variant='primary' onClick={handleAddItem}>
           Save Changes
-        </Button>
+        </Button> */}
       </Modal.Footer>
     </Modal>
   )

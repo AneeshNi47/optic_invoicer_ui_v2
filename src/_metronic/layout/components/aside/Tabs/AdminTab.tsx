@@ -51,7 +51,7 @@ const AdminTab = () => {
           {adminOptions.map((p) => (
             <Link
               key={p.key}
-              to='/organization/invoices'
+              to='/admin/organizations'
               className='custom-list d-flex align-items-center px-5 py-4'
             >
               {/*begin::Symbol*/}

@@ -7,11 +7,13 @@ import {useLayout} from '../../core'
 import {KTIcon, toAbsoluteUrl} from '../../../helpers'
 import {AsideTabs} from './AsideTabs'
 import {TabsBase} from './Tabs/_TabsBase'
+import {useAuth} from '../../../../app/modules/auth'
 
 const AsideDefault = () => {
   const {config} = useLayout()
   const {classes} = useLayout()
-  const [link, setLink] = useState<string>('projects')
+  const {currentUser} = useAuth()
+  const [link, setLink] = useState<string>(`${currentUser?.user_type}`)
 
   return (
     <div

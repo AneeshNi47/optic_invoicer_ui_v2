@@ -4,9 +4,16 @@ import {KTIcon} from '../../../helpers'
 import {ThemeModeSwitcher} from '../../../partials'
 import {CreateInvoiceModal} from '../../../partials'
 import {SelectLocationModal} from '../../../partials'
+import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory'
+import { useLocation } from 'react-router-dom';
 
 const Topbar: FC = () => {
-  const [showModal, setShowModal] = useState(false)
+  const [showModal, setShowModal] = useState(false);
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  console.log(currentPath);
 
   const handleOpenModal = () => {
     setShowModal(true)
@@ -21,7 +28,7 @@ const Topbar: FC = () => {
       <CreateInvoiceModal
         show={showModal}
         handleClose={handleCloseModal}
-        // other props if needed
+        currentPath={`${currentPath}`}
       />
       {/* begin::Invite user */}
       <div className='d-flex ms-3'>

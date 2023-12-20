@@ -6,6 +6,7 @@ import {Link} from 'react-router-dom'
 import {useFormik} from 'formik'
 import {getUserByToken, login} from '../core/_requests'
 import {useAuth} from '../core/Auth'
+import {toast} from 'react-toastify'
 
 const loginSchema = Yup.object().shape({
   username: Yup.string()
@@ -38,12 +39,14 @@ export function Login() {
         const {data: user} = await getUserByToken(auth.token)
         console.log(user)
         setCurrentUser(user)
+        toast.success("logged in successfully")
       } catch (error) {
         console.error(error)
         saveAuth(undefined)
         setStatus('The login details are incorrect')
         setSubmitting(false)
         setLoading(false)
+        toast.error("Invalid Credentials")
       }
     },
   })

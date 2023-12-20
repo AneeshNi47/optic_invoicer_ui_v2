@@ -2,6 +2,7 @@ import {Outlet, Route, Routes} from 'react-router-dom'
 import {PageLink, PageTitle} from '../../../_metronic/layout/core'
 import {InvoicesTable} from './invoices/InvoicesTable'
 import {InventoryTable} from './inventory/InventoryTable'
+import {CustomerTable} from './customers/CustomerTable'
 
 const widgetsBreadCrumbs: Array<PageLink> = [
   {
@@ -37,6 +38,15 @@ const InvoicePage = () => {
             <>
               <PageTitle breadcrumbs={widgetsBreadCrumbs}>Inventory</PageTitle>
               <InventoryTable className='custom-list d-flex px-5 py-4' />
+            </>
+          }
+        />
+        <Route
+          path='customers'
+          element={
+            <>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Customers</PageTitle>
+              <CustomerTable className='custom-list d-flex px-5 py-4' />
             </>
           }
         />
