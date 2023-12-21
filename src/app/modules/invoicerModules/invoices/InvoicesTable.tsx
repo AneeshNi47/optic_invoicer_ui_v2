@@ -1,9 +1,11 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, {useEffect, useState} from 'react'
+import React, {useEffect, useState, useRef} from 'react'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {useAuth} from '../../auth'
 import {getInvoices} from './_requests'
 import {InvoiceModel} from './_models'
+import {InvoiceDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
+import {InvidualInvoice} from './_models'
 
 type Props = {
   className: string
@@ -11,21 +13,95 @@ type Props = {
 
 const InvoicesTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [invoices, setInvoices] = useState<InvoiceModel[]>([])
+  const [invoices, setInvoices] = useState<InvoiceModel | any>({})
+  const [showModal, setShowModal] = useState(false)
+  const [modalContent, setModalContent] = useState<InvidualInvoice | any>({})
+  const [loading, setLoading] = useState(false)
+  const [dataTodisplay, setDataToDisplay] = useState<Array<InvidualInvoice> | any[]>([])
+
+  const containerRef = useRef<HTMLDivElement | null>(null)
+
+  const handleOpenModal = (values) => {
+    setShowModal(true)
+    setModalContent(values)
+  }
+
+  const handleCloseModal = () => {
+    setShowModal(false)
+  }
+
+  const fetchInvoiceData = async () => {
+    if (auth?.token) {
+      setLoading(true)
+      try {
+        const responseData = await getInvoices(auth.token, invoices.next, 5)
+        setInvoices((prev: any) => ({
+          ...prev,
+          ...responseData.data,
+        }))
+
+        console.log(responseData.data, '0000')
+
+        setDataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+      setLoading(false)
+    }
+  }
+  // console.log(invoices)
+  // useEffect(() => {
+  //   if (auth?.token) {
+  //     getInvoices(auth.token)
+  //       .then((response) => {
+  //         setInvoices(response.data)
+  //       })
+  //       .catch((error) => {
+  //         // Handle the error
+  //       })
+  //   }
+  // }, [auth?.token])
 
   useEffect(() => {
-    if (auth?.token) {
-      getInvoices(auth.token)
-        .then((response) => {
-          setInvoices(response.data)
-        })
-        .catch((error) => {
-          // Handle the error
-        })
-    }
+    fetchInvoiceData()
   }, [auth?.token])
+
+  useEffect(() => {
+    const SCROLL_THRESHOLD = 10 // Adjust the threshold as needed
+
+    const handleScroll = () => {
+      const isScrollingUp =
+        containerRef.current && containerRef.current.scrollTop <= SCROLL_THRESHOLD
+      const isScrollingDown =
+        containerRef.current &&
+        containerRef.current.scrollTop + containerRef.current.clientHeight >=
+          containerRef.current.scrollHeight - SCROLL_THRESHOLD
+
+      // if (isScrollingUp && !loading) {
+      //   fetchInvoiceData();
+      // }
+      if (isScrollingDown && !loading && invoices.next) {
+        fetchInvoiceData()
+      }
+    }
+
+    if (containerRef.current) {
+      containerRef.current.addEventListener('scroll', handleScroll)
+    }
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.removeEventListener('scroll', handleScroll)
+      }
+    }
+  }, [auth?.token, loading])
   return (
     <div className={`card ${className}`}>
+      <InvoiceDetailsModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        modalContent={modalContent}
+      />
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
@@ -138,7 +214,11 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
       {/* begin::Body */}
       <div className='card-body py-3'>
         {/* begin::Table container */}
-        <div className='table-responsive'>
+        <div
+          className='table-responsive'
+          style={{overflowY: 'auto', maxHeight: '350px'}}
+          ref={containerRef}
+        >
           {/* begin::Table */}
           <table className='table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3'>
             {/* begin::Table head */}
@@ -167,73 +247,83 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              {invoices.map((invoice, index) => (
-                <tr key={index}>
-                  <td>
-                    <div className='form-check form-check-sm form-check-custom form-check-solid'>
-                      <input
-                        className='form-check-input widget-13-check'
-                        type='checkbox'
-                        value='1'
-                      />
-                    </div>
-                  </td>
-                  <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary fs-6'>
-                      {invoice.invoice_number}
-                    </a>
-                  </td>
-                  <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                      {invoice.customer.first_name}
-                    </a>
-                    <span className='text-muted fw-semibold text-muted d-block fs-7'>Code: PH</span>
-                  </td>
-                  <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                      {invoice.created_on}
-                    </a>
-                    <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                      Code: Paid
-                    </span>
-                  </td>
-                  <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'>
-                      Intertico
-                    </a>
-                    <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                      Web, UI/UX Design
-                    </span>
-                  </td>
-                  <td className='text-dark fw-bold text-hover-primary fs-6'>{invoice.total}</td>
-                  <td>
-                    <span className='badge badge-light-success'>{invoice.status}</span>
-                  </td>
-                  <td className='text-end'>
-                    <a
-                      href='#'
-                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                    >
-                      <KTIcon iconName='switch' className='fs-3' />
-                    </a>
-                    <a
-                      href='#'
-                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                    >
-                      <KTIcon iconName='pencil' className='fs-3' />
-                    </a>
-                    <a
-                      href='#'
-                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm'
-                    >
-                      <KTIcon iconName='trash' className='fs-3' />
-                    </a>
-                  </td>
-                </tr>
-              ))}
+              {invoices.results &&
+                dataTodisplay.map((invoice, index) => (
+                  <tr key={index}>
+                    <td>
+                      <div className='form-check form-check-sm form-check-custom form-check-solid'>
+                        <input
+                          className='form-check-input widget-13-check'
+                          type='checkbox'
+                          value='1'
+                        />
+                      </div>
+                    </td>
+                    <td>
+                      <a href='#' className='text-dark fw-bold text-hover-primary fs-6'>
+                        {invoice.invoice_number}
+                      </a>
+                    </td>
+                    <td>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'
+                      >
+                        {invoice.customer.first_name}
+                      </a>
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        Code: PH
+                      </span>
+                    </td>
+                    <td>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'
+                      >
+                        {invoice.created_on}
+                      </a>
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        Code: Paid
+                      </span>
+                    </td>
+                    <td>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'
+                      >
+                        Intertico
+                      </a>
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        Web, UI/UX Design
+                      </span>
+                    </td>
+                    <td className='text-dark fw-bold text-hover-primary fs-6'>{invoice.total}</td>
+                    <td>
+                      <span className='badge badge-light-success'>{invoice.status}</span>
+                    </td>
+                    <td className='text-end'>
+                      <a className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'>
+                        <KTIcon iconName='pencil' className='fs-3' />
+                      </a>
+                      <a className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'>
+                        <KTIcon iconName='trash' className='fs-3' />
+                      </a>
+                      <a
+                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm'
+                        onClick={() => {
+                          handleOpenModal(invoice)
+                        }}
+                      >
+                        <KTIcon iconName='arrow-right' className='fs-3' />
+                      </a>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
             {/* end::Table body */}
           </table>
+          <div style={{height: '10px'}} />
+          {loading && <p>Loading...</p>}
           {/* end::Table */}
         </div>
         {/* end::Table container */}

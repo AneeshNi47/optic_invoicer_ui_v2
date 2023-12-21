@@ -7,6 +7,10 @@ import {MenuTestPage} from '../pages/MenuTestPage'
 import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
 import InvoicePage from '../modules/invoicerModules/InvoicerPageRoutes'
+import AdminPage from '../modules/adminModules/adminPageRoutes'
+import {Logout, AuthPage, useAuth} from '../modules/auth'
+import { InvoicerDashboardWrapper } from '../modules/invoicerModules/dashboard/InvoicerDashboard'
+import { AdminDashboardWrapper } from '../modules/adminModules/dashboard/AdminDashboard'
 
 const PrivateRoutes = () => {
   const ProfilePage = lazy(() => import('../modules/profile/ProfilePage'))
@@ -16,13 +20,16 @@ const PrivateRoutes = () => {
   const ChatPage = lazy(() => import('../modules/apps/chat/ChatPage'))
   const UsersPage = lazy(() => import('../modules/apps/user-management/UsersPage'))
 
+  const {currentUser} = useAuth()
+
   return (
     <Routes>
       <Route element={<MasterLayout />}>
         {/* Redirect to Dashboard after success login/registartion */}
         <Route path='auth/*' element={<Navigate to='/dashboard' />} />
         {/* Pages */}
-        <Route path='dashboard' element={<DashboardWrapper />} />
+        {currentUser?.user_type == "staff" ? <Route path='dashboard' element={<InvoicerDashboardWrapper />} /> : <Route path='dashboard' element={<AdminDashboardWrapper />} />}
+        
         <Route path='menu-test' element={<MenuTestPage />} />
         {/* Lazy Modules */}
         <Route
@@ -54,6 +61,14 @@ const PrivateRoutes = () => {
           element={
             <SuspensedView>
               <InvoicePage />
+            </SuspensedView>
+          }
+        />
+         <Route
+          path='/admin/*'
+          element={
+            <SuspensedView>
+              <AdminPage />
             </SuspensedView>
           }
         />

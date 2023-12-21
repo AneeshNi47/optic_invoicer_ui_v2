@@ -5,9 +5,11 @@ import {LayoutProvider, LayoutSplashScreen} from '../_metronic/layout/core'
 import {MasterInit} from '../_metronic/layout/MasterInit'
 import {AuthInit} from './modules/auth'
 import {ThemeModeProvider} from '../_metronic/partials'
+import { ToastContainer } from "react-toastify";
 
 const App = () => {
   return (
+    <>
     <Suspense fallback={<LayoutSplashScreen />}>
       <I18nProvider>
         <LayoutProvider>
@@ -20,6 +22,8 @@ const App = () => {
         </LayoutProvider>
       </I18nProvider>
     </Suspense>
+    <ToastContainer position="bottom-right" />
+    </>
   )
 }
 

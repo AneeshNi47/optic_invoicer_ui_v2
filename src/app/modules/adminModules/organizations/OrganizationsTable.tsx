@@ -3,21 +3,20 @@ import React, {useState, useEffect, useRef} from 'react'
 import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
-import {getInventoryItems} from './_requests'
+import {getOrganisations} from './_requests'
 import {DetailsModal} from '../../../../_metronic/partials/modals/create-invoice/DetailsModal'
-import {InventoryItem, InventoryItems} from './_models'
+import {OrganisationModel} from './_models'
 
 type Props = {
   className: string
 }
 
-const InventoryTable: React.FC<Props> = ({className}) => {
+const OrganizationsTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [inventoryItems, setInventoryItems] = useState<InventoryItems | any>({})
+  const [inventoryItems, setInventoryItems] = useState<OrganisationModel[] | any[]>([])
   const [showModal, setShowModal] = useState(false)
-  const [modalContent, setModalContent] = useState<InventoryItem | any>({})
+  const [modalContent, setModalContent] = useState<OrganisationModel | any>({})
   const [loading, setLoading] = useState(false)
-  const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -34,13 +33,10 @@ const InventoryTable: React.FC<Props> = ({className}) => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInventoryItems(auth.token, inventoryItems.next, 5)
-        setInventoryItems((prev: any) => ({
-          ...prev,
-          ...responseData.data,
-        }))
+        const responseData = await getOrganisations(auth.token)
 
-        setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
+        console.log(responseData)
+        setInventoryItems(responseData.data as any)
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -51,36 +47,6 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   useEffect(() => {
     fetchInventoryData()
   }, [auth?.token])
-
-  useEffect(() => {
-    const SCROLL_THRESHOLD = 10 // Adjust the threshold as needed
-
-    const handleScroll = () => {
-      const isScrollingUp =
-        containerRef.current && containerRef.current.scrollTop <= SCROLL_THRESHOLD
-      const isScrollingDown =
-        containerRef.current &&
-        containerRef.current.scrollTop + containerRef.current.clientHeight >=
-          containerRef.current.scrollHeight - SCROLL_THRESHOLD
-
-      // if (isScrollingUp && !loading) {
-      //   fetchInventoryData();
-      // }
-      if (isScrollingDown && !loading && inventoryItems.next) {
-        fetchInventoryData()
-      }
-    }
-
-    if (containerRef.current) {
-      containerRef.current.addEventListener('scroll', handleScroll)
-    }
-
-    return () => {
-      if (containerRef.current) {
-        containerRef.current.removeEventListener('scroll', handleScroll)
-      }
-    }
-  }, [auth?.token, loading])
 
   return (
     <div className={`card ${className}`}>
@@ -134,24 +100,30 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                   <h4>Name</h4>
                 </th>
                 <th className='p-0 min-w-120px'>
-                  <h4>Brand</h4>
+                  <h4>Email</h4>
                 </th>
                 <th className='p-0 min-w-125px'>
-                  <h4>Cost Value</h4>
+                  <h4>Is Active</h4>
                 </th>
                 <th className='p-0 min-w-90px'>
-                  <h4>Quantity</h4>
+                  <h4>Mobile</h4>
                 </th>
                 <th className='p-0 min-w-50px'>
-                  <h4>Info</h4>
+                  <h4>Staff Count</h4>
+                </th>
+                <th className='p-0 min-w-50px'>
+                  <h4>Staff First Name</h4>
+                </th>
+                <th className='p-0 min-w-50px'>
+                  <h4>Subscription Status</h4>
                 </th>
               </tr>
             </thead>
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              {inventoryItems.results &&
-                dataTodisplay.map((item, index) => (
+              {inventoryItems &&
+                inventoryItems.map((item, index) => (
                   <tr key={index}>
                     <td>
                       <div className='symbol symbol-50px me-2'>
@@ -168,37 +140,42 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                       <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6'>
                         {item.name}
                       </a>
-                      <span className='text-muted fw-semibold d-block fs-7'>{item.item_type}</span>
+                      <span className='text-muted fw-semibold d-block fs-7'>{item.email}</span>
                     </td>
                     <td className='text-start'>
                       <span className='badge badge-light-danger fw-semibold me-1'>
-                        <h5>{item.brand}</h5>
+                        <h5>{item.email}</h5>
                       </span>
                     </td>
                     <td className='text-start'>
-                      <span className='text-muted fw-semibold'>{item.cost_value}</span>
+                      <span className='text-muted fw-semibold'>
+                        {item.is_active ? (
+                          <h4 className='text-success'>Active</h4>
+                        ) : (
+                          <h4 className='text-danger'>Not Active</h4>
+                        )}
+                      </span>
                     </td>
                     <td className='text-start'>
-                      <span className='text-muted fw-semibold'>{item.qty}</span>
+                      <span className='text-muted fw-semibold'>
+                        <h5>{item.primary_phone_mobile}</h5>
+                      </span>
                     </td>
                     <td className='text-start'>
-                      <a
-                        href='#'
-                        className='btn btn-sm btn-icon btn-bg-light btn-active-color-primary'
-                        onClick={() => {
-                          handleOpenModal(item)
-                        }}
-                      >
-                        <KTIcon iconName='arrow-right' className='fs-2' />
-                      </a>
+                      <h5>{item.staff_count}</h5>
+                    </td>
+                    <td className='text-start'>
+                      <h5>{item.superstaff_first_name}</h5>
+                    </td>
+                    <td className='text-start'>
+                      {/* <h5>{item.subscription_status || '-'}</h5> */}
                     </td>
                   </tr>
                 ))}
             </tbody>
             {/* end::Table body */}
           </table>
-          <div style={{height: '10px'}} />
-          {loading && <p>Loading...</p>}
+
           {/* end::Table */}
         </div>
         {/* end::Table container */}
@@ -208,4 +185,4 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   )
 }
 
-export {InventoryTable}
+export {OrganizationsTable}
