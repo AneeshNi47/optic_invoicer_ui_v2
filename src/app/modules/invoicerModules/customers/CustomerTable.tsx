@@ -4,8 +4,11 @@ import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers';
 import { Dropdown1 } from '../../../../_metronic/partials';
 import { useAuth } from '../../auth';
 // import { getInventoryItems } from './_requests';
-import { DetailsModal } from '../../../../_metronic/partials/modals/create-invoice/DetailsModal';
+import { InventoryDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal';
 import { getCustomerItems } from './_requests';
+import { CustomerDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/CustomerDetailsModal';
+import { toast } from 'react-toastify';
+
 // import { InventoryItem, InventoryItems } from './_models';
 
 type Props = {
@@ -17,17 +20,19 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
   const [customerItems, setCustomerItems] = useState<any>({});
   const [loading, setLoading] = useState(false);
   const [dataTodisplay, setDataToDisplay] = useState<any[]>([]);
+  const [showModal, setShowModal] = useState(false)
+  const [modalContent, setModalContent] = useState<any>({})
 
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // const handleOpenModal = (values) => {
-  //   setShowModal(true);
-  //   setModalContent(values);
-  // };
+  const handleOpenModal = (values) => {
+    setShowModal(true);
+    setModalContent(values);
+  };
 
-  // const handleCloseModal = () => {
-  //   setShowModal(false);
-  // };
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
 
   const fetchInventoryData = async () => {
     if (auth?.token) {
@@ -43,7 +48,8 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
           ...prev,
           ...responseData.data.results,
         ]));
-      } catch (error) {
+      } catch (error: any) {
+        toast.error(error.response.data.error)
         console.error('Error fetching data:', error);
       }
       setLoading(false);
@@ -85,6 +91,11 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
 
   return (
     <div className={`card ${className}`}>
+       <CustomerDetailsModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        modalContent={modalContent}
+      />
       
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
@@ -131,7 +142,7 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
                 <th className='p-0 min-w-100px'><h4>Phone</h4></th>
                 <th className='p-0 min-w-125px'><h4>Is Active</h4></th>
                 <th className='p-0 min-w-90px'><h4>Gender</h4></th>
-                <th className='p-0 min-w-50px'><h4>Organisation</h4></th>
+                <th className='p-0 min-w-50px'><h4>Action</h4></th>
               </tr>
             </thead>
             {/* end::Table head */}
@@ -151,7 +162,9 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
                     </div>
                   </td>
                   <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6'>
+                    <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6' onClick={() => {
+                      handleOpenModal(item);
+                    }}>
                       {item.first_name + " " + item.last_name}
                     </a>
                     <span className='text-muted fw-semibold d-block fs-7'>{item.email}</span>
@@ -166,16 +179,16 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
                     <span className='text-muted fw-semibold'>{item.gender == 'M' ? <h5>Male</h5> : <h5>Female</h5>}</span>
                   </td>
                   <td className='text-start'>
-                    {item.organization}
-                    {/* <a
+                    
+                    <a
                       href='#'
                       className='btn btn-sm btn-icon btn-bg-light btn-active-color-primary'
                       onClick={() => {
                         handleOpenModal(item);
                       }}
                     >
-                      <KTIcon iconName='arrow-right' className='fs-2' />
-                    </a> */}
+                      <KTIcon iconName='eye' className='fs-2' />
+                    </a>
                   </td>
                 </tr>
               ))}

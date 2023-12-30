@@ -7,12 +7,12 @@ const API_URL = process.env.REACT_APP_API_URL
 export const GET_INVENTORY_ITEMS_URL = `${API_URL}/api/inventory`
 
 // Server should return Inventory
-export function getInventoryItems(token: string,next: string, page: number) {
+export function getInventoryItems(token: string,next: string, page: number, initialLoad: boolean) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  if(next) {
+  if(next && !initialLoad) {
     return axios.get<InventoryItems>(`${next}`, {headers})
   }
   return axios.get<InventoryItems>(`${GET_INVENTORY_ITEMS_URL}/?page_size=${page}`, {headers})

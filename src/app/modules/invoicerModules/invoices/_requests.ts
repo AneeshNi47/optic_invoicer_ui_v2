@@ -5,14 +5,17 @@ const API_URL = process.env.REACT_APP_API_URL
 
 export const GET_INVOICES_URL = `${API_URL}/api/invoice`
 export const GET_CUSTOMER_URL = `${API_URL}/api/search_customer`
+export const GET_INVENTORY_URL = `${API_URL}/api/search_inventory`
+export const POST_PAYMENT_URL = `${API_URL}/api/invoice-payment`
+export const FILE_DOWNLOAD_URL = `${API_URL}/api/invoice/customer-pdf/`
 
 // Server should return InvoiceModel
-export function getInvoices(token: string, next: string, page: number) {
+export function getInvoices(token: string, next: string, page: number, initialLoad: boolean) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  if(next) {
+  if(next && !initialLoad) {
     return axios.get<InvoiceModel[]>(`${next}`, {headers})
   }
   return axios.get<InvoiceModel>(`${GET_INVOICES_URL}/?page_size=${page}`, {headers})
@@ -27,10 +30,70 @@ export function addInvoiceService(token:string, data: InvoiceModel) {
   return axios.post<InvoiceModel[]>(`${GET_INVOICES_URL}/create/`, data, { headers })
 }
 
-export function fetchSearchedCustomers(token: string, value: string) {
+export function fetchSearchedCustomers(token: string, value: string, selectCustomerBy: string) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  return axios.get<any>(`${GET_CUSTOMER_URL}?phone=${value}`, {headers})
+  return axios.get<any>(`${GET_CUSTOMER_URL}?${selectCustomerBy}=${value}`, {headers})
 }
+
+export function fetchSearchedInventory(token: string, value: string, searchInventoryBy: string) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  return axios.get<any>(`${GET_INVENTORY_URL}?${searchInventoryBy}=${value}`, {headers})
+}
+
+export function invoicePayment(token: string, data: any) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  return axios.post<any>(`${POST_PAYMENT_URL}/`,data , {headers})
+}
+
+export function generateInvoicePDF(token: string, value) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  return axios.get<any>(`${FILE_DOWNLOAD_URL}${value}`, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Token ${token}`,
+    },
+    responseType: "blob",
+  })
+}
+
+export const printInvoice = (token, invoice_id) => {
+  return async (dispatch) => {
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`${FILE_DOWNLOAD_URL}${invoice_id}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+          },
+          responseType: "blob",
+        })
+        .then((res) => {
+          const blob = new Blob([res.data], { type: "application/pdf" });
+          const url = window.URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.setAttribute("download", `${invoice_id}.pdf`);
+          document.body.appendChild(link);
+          link.click();
+          resolve(blob);
+        })
+        .catch((err) => {
+          dispatch(err.response.data, err.response.status);
+          reject(); // Reject the promise in case of an error
+        });
+    });
+  };
+};
+

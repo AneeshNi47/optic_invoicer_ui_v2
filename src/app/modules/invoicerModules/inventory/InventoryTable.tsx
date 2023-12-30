@@ -4,8 +4,12 @@ import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
 import {getInventoryItems} from './_requests'
-import {DetailsModal} from '../../../../_metronic/partials/modals/create-invoice/DetailsModal'
+import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {InventoryItem, InventoryItems} from './_models'
+import {toast} from 'react-toastify'
+import {useDispatch, useSelector} from 'react-redux'
+
+import {useInventoryContext} from './InventoryProvider'
 
 type Props = {
   className: string
@@ -18,6 +22,11 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   const [modalContent, setModalContent] = useState<InventoryItem | any>({})
   const [loading, setLoading] = useState(false)
   const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
+  const [initialLoad, setInitialLoad] = useState<boolean>(true)
+
+  const {setShouldFetchInventory} = useInventoryContext()
+
+  const {shouldFetchInventory} = useInventoryContext()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -34,23 +43,34 @@ const InventoryTable: React.FC<Props> = ({className}) => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInventoryItems(auth.token, inventoryItems.next, 5)
+        const responseData = await getInventoryItems(
+          auth.token,
+          inventoryItems.next,
+          5,
+          shouldFetchInventory
+        )
         setInventoryItems((prev: any) => ({
           ...prev,
           ...responseData.data,
         }))
+        setLoading(false)
 
         setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
-      } catch (error) {
+      } catch (error: any) {
+        toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
       }
-      setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchInventoryData()
-  }, [auth?.token])
+    if (initialLoad || shouldFetchInventory) {
+      setDataToDisplay([])
+      fetchInventoryData()
+      setShouldFetchInventory(false)
+      setInitialLoad(false)
+    }
+  }, [auth?.token, shouldFetchInventory, initialLoad])
 
   useEffect(() => {
     const SCROLL_THRESHOLD = 10 // Adjust the threshold as needed
@@ -84,7 +104,11 @@ const InventoryTable: React.FC<Props> = ({className}) => {
 
   return (
     <div className={`card ${className}`}>
-      <DetailsModal show={showModal} handleClose={handleCloseModal} modalContent={modalContent} />
+      <InventoryDetailsModal
+        show={showModal}
+        handleClose={handleCloseModal}
+        modalContent={modalContent}
+      />
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
@@ -165,7 +189,13 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                       </div>
                     </td>
                     <td>
-                      <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6'>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary mb-1 fs-6'
+                        onClick={() => {
+                          handleOpenModal(item)
+                        }}
+                      >
                         {item.name}
                       </a>
                       <span className='text-muted fw-semibold d-block fs-7'>{item.item_type}</span>
@@ -189,7 +219,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                           handleOpenModal(item)
                         }}
                       >
-                        <KTIcon iconName='arrow-right' className='fs-2' />
+                        <KTIcon iconName='eye' className='fs-2' />
                       </a>
                     </td>
                   </tr>

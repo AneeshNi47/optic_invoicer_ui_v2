@@ -11,24 +11,24 @@ import AddOrganizations from '../../../../app/modules/adminModules/organizations
 type Props = {
   show: boolean
   handleClose: () => void
-  currentPath: string
+  modalName: string
   // Add additional props as required
 }
 
-const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, currentPath  /*, other props */}) => {
+const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName  /*, other props */}) => {
   const [selectedCustomer, setSelectedCustomer] = useState(false);
   let title: string = "";
   let componentToRender: JSX.Element = <></>;
   
-  if(currentPath == "/organization/inventory" ) {
+  if(modalName == "inventory" ) {
     title="Add Inventory";
-    componentToRender =<AddInventory/>
-  } else if (currentPath == "/organization/invoices") {
+    componentToRender =<AddInventory handleClose={handleClose}/>
+  } else if (modalName == "invoice") {
     title="Add Invoice";
-    componentToRender = <AddInvoice/>
-  } else if(currentPath == "/admin/organizations") {
+    componentToRender = <AddInvoice handleClose={handleClose}/>
+  } else if(modalName == "admin") {
     title= "Add Organization"
-    componentToRender= <AddOrganizations/>
+    componentToRender= <AddOrganizations handleClose={handleClose}/>
   }
 
   

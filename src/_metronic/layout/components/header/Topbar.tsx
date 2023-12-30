@@ -6,16 +6,16 @@ import {CreateInvoiceModal} from '../../../partials'
 import {SelectLocationModal} from '../../../partials'
 import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory'
 import { useLocation } from 'react-router-dom';
+import { useAuth } from '../../../../app/modules/auth'
 
 const Topbar: FC = () => {
   const [showModal, setShowModal] = useState(false);
+  const [modal, setModal] = useState('');
+  const {currentUser} = useAuth()
+  console.log(currentUser)
 
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  console.log(currentPath);
-
-  const handleOpenModal = () => {
+  const handleOpenModal = (modalValue) => {
+    setModal(modalValue)
     setShowModal(true)
   }
 
@@ -28,18 +28,52 @@ const Topbar: FC = () => {
       <CreateInvoiceModal
         show={showModal}
         handleClose={handleCloseModal}
-        currentPath={`${currentPath}`}
+        modalName={`${modal}`}
       />
       {/* begin::Invite user */}
+
+      {currentUser?.user_type == "staff" &&
+      <>
       <div className='d-flex ms-3'>
         <button
           className='btn btn-flex flex-center bg-body btn-color-gray-700 btn-active-color-primary w-40px w-md-auto h-40px px-0 px-md-6'
-          onClick={handleOpenModal}
+          onClick={() => {
+            handleOpenModal("invoice")
+          }}
         >
           <KTIcon iconName='plus' className='fs-2 text-primary me-0 me-md-2' />
           <span className='d-none d-md-inline'>New Invoice</span>
         </button>
       </div>
+      <div className='d-flex ms-3'>
+        <button
+          className='btn btn-flex flex-center bg-body btn-color-gray-700 btn-active-color-primary w-40px w-md-auto h-40px px-0 px-md-6'
+          onClick={() => {
+            handleOpenModal("inventory")
+          }}
+        >
+          <KTIcon iconName='plus' className='fs-2 text-primary me-0 me-md-2' />
+          <span className='d-none d-md-inline'>New Inventory</span>
+        </button>
+      </div>
+      </>
+      }
+
+      {currentUser?.user_type == "admin" &&
+      <>
+      <div className='d-flex ms-3'>
+        <button
+          className='btn btn-flex flex-center bg-body btn-color-gray-700 btn-active-color-primary w-40px w-md-auto h-40px px-0 px-md-6'
+          onClick={() => {
+            handleOpenModal("admin")
+          }}
+        >
+          <KTIcon iconName='plus' className='fs-2 text-primary me-0 me-md-2' />
+          <span className='d-none d-md-inline'>New Organisation</span>
+        </button>
+      </div>
+      </>
+      }
       {/* end::Invite user */}
 
       {/* begin::Theme mode */}
