@@ -19,7 +19,7 @@ import './_metronic/assets/sass/style.scss'
 import './_metronic/assets/sass/plugins.scss'
 import {AppRoutes} from './app/routing/AppRoutes'
 import {AuthProvider, setupAxios} from './app/modules/auth'
-import { Provider } from 'react-redux';
+
 import store from './store'
 /**
  * Creates `axios-mock-adapter` instance for provided `axios` instance, add

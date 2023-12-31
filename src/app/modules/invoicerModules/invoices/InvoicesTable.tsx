@@ -24,14 +24,8 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   const [loading, setLoading] = useState(false)
   const [dataTodisplay, setDataToDisplay] = useState<Array<InvidualInvoice> | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
-
   const {setShouldFetchInvoice, shouldFetchInvoice} = useInventoryContext();
-
   const containerRef = useRef<HTMLDivElement | null>(null)
-
-
-  
-
   const handleOpenModal = (values) => {
     setShowModal(true)
     setModalContent(values)
@@ -59,13 +53,14 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
           ...prev,
           ...responseData.data,
         }))
+        setLoading(false)
 
         setDataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
       }
-      setLoading(false)
+      
     }
   }
 
@@ -102,7 +97,6 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
       setShouldFetchInvoice(false)
       setInitialLoad(false)
     }
-    fetchInvoiceData()
   }, [auth?.token, shouldFetchInvoice, initialLoad])
 
   useEffect(() => {

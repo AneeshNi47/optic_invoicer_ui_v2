@@ -6,7 +6,6 @@ import {addInventory} from './_requests'
 import {useAuth} from '../../auth'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
-import { useDispatch } from 'react-redux';
 
 import { useInventoryContext } from './InventoryProvider'
 

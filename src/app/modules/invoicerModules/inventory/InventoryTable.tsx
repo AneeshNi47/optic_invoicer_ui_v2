@@ -7,7 +7,6 @@ import {getInventoryItems} from './_requests'
 import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {InventoryItem, InventoryItems} from './_models'
 import {toast} from 'react-toastify'
-import {useDispatch, useSelector} from 'react-redux'
 
 import {useInventoryContext} from './InventoryProvider'
 
