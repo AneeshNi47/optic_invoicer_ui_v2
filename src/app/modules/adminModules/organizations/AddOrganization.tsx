@@ -7,12 +7,15 @@ import {AddOrganisationModel} from './_models'
 import {useAuth} from '../../auth'
 import {addOrganisation} from './_requests'
 import {toast} from 'react-toastify'
+import { useInventoryContext } from '../../invoicerModules/inventory/InventoryProvider'
 
 interface AddInventoryProps {
+  handleClose: () => void
   //   onSubmit: (formData: AddInventoryItem) => void;
 }
 
-const AddInventory: React.FC<AddInventoryProps> = () => {
+const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
+  const {setShouldFetchOrganisation} = useInventoryContext();
   const {auth} = useAuth()
   interface InitialValues {
     org_name: string
@@ -103,7 +106,6 @@ const AddInventory: React.FC<AddInventoryProps> = () => {
   })
 
   const handleSubmit = async (values: InitialValues) => {
-    try {
       console.log(values)
       const dataTosend = {
         organization: {
@@ -136,19 +138,23 @@ const AddInventory: React.FC<AddInventoryProps> = () => {
         },
       }
       if (auth?.token) {
-        const response = await addOrganisation(auth?.token, dataTosend)
-        console.log(response)
-        if (response && response.status === 201) {
-          toast.success('Organization added successfully!')
-          window.location.href = '/admin/organizations'
-        } else {
-          toast.error('Failed to add organization. Please try again.')
+        try {
+          const response = await addOrganisation(auth?.token, dataTosend)
+          console.log(response)
+          if (response && response.status === 201) {
+            toast.success('Organization added successfully!')
+            setShouldFetchOrganisation(true);
+            handleClose.handleClose();
+          } else {
+            toast.error('Failed to add organization. Please try again.')
+            handleClose.handleClose();
+          }
+        } catch(error: any) {
+          toast.error(error.response.data.error);
+          handleClose.handleClose();
         }
+       
       }
-    } catch (error) {
-      console.error(error)
-      toast.error('Unable to add organisation')
-    }
   }
 
   return (

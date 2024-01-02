@@ -7,11 +7,15 @@ import {useAuth} from '../../auth'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
 
+import { useInventoryContext } from './InventoryProvider'
+
 interface AddInventoryProps {
-  //   onSubmit: (formData: AddInventoryItem) => void;
+  handleClose: () => void
 }
 
-const AddInventory: React.FC<AddInventoryProps> = () => {
+const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
+ 
+  const { setShouldFetchInventory } = useInventoryContext();
   const {auth} = useAuth()
   const initialValues: AddInventoryItem = {
     item_type: '',
@@ -36,21 +40,24 @@ const AddInventory: React.FC<AddInventoryProps> = () => {
   })
 
   const handleSubmit = async (values: AddInventoryItem) => {
-    console.log(values)
     if (auth?.token) {
       try {
         const response = await addInventory(auth?.token, values)
-        console.log(response)
 
-        if (response.status === 201) {
-          toast.success('Inventory created successfully')
-          window.location.href = '/organization/inventory'
+        if (response.status == 201) {
+          toast.success('Inventory created successfully');
+          setShouldFetchInventory(true);
+          // dispatch(setShouldFetchInventory(true));
+          handleClose.handleClose()
+          
         } else {
-          toast.error('Unable to add Inventory')
+          toast.error("Unable to create Inventory")
+          handleClose.handleClose()
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error adding inventory:', error)
-        toast.error('An error occurred while adding inventory')
+        toast.error(error.response.data.error)
+        handleClose.handleClose()
       }
     }
   }

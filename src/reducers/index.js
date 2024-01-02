@@ -7,6 +7,7 @@ import customer from "./customer";
 import prescription from "./prescription";
 import inventory from "./inventory";
 import organization from "./organization";
+import inventoryRefetch from './inventoryRefetch'
 
 export default combineReducers({
   invoiceReducer: invoices,
@@ -17,4 +18,6 @@ export default combineReducers({
   inventoryReducer: inventory,
   prescriptionReducer: prescription,
   organizationReducer: organization,
+  inventoryRefetchReducer: inventoryRefetch
+
 });

@@ -4,8 +4,10 @@ import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
 import {getOrganisations} from './_requests'
-import {DetailsModal} from '../../../../_metronic/partials/modals/create-invoice/DetailsModal'
+import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {OrganisationModel} from './_models'
+import { toast } from 'react-toastify'
+import { useInventoryContext } from '../../invoicerModules/inventory/InventoryProvider'
 
 type Props = {
   className: string
@@ -17,6 +19,9 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
   const [showModal, setShowModal] = useState(false)
   const [modalContent, setModalContent] = useState<OrganisationModel | any>({})
   const [loading, setLoading] = useState(false)
+  const [initialLoad, setInitialLoad] = useState<boolean>(true)
+
+  const {setShouldFetchOrganisation, shouldFetchOrganisation} = useInventoryContext()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -37,7 +42,8 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
 
         console.log(responseData)
         setInventoryItems(responseData.data as any)
-      } catch (error) {
+      } catch (error: any) {
+        toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
       }
       setLoading(false)
@@ -45,12 +51,17 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
   }
 
   useEffect(() => {
+    if (initialLoad || shouldFetchOrganisation) {
+      fetchInventoryData()
+      setShouldFetchOrganisation(false)
+      setInitialLoad(false)
+    }
     fetchInventoryData()
-  }, [auth?.token])
+  }, [auth?.token, initialLoad, shouldFetchOrganisation])
 
   return (
     <div className={`card ${className}`}>
-      <DetailsModal show={showModal} handleClose={handleCloseModal} modalContent={modalContent} />
+      {/* <InventoryDetailsModal show={showModal} handleClose={handleCloseModal} modalContent={modalContent} setLoading={setLoading}/> */}
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>

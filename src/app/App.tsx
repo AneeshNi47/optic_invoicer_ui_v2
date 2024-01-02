@@ -6,12 +6,16 @@ import {MasterInit} from '../_metronic/layout/MasterInit'
 import {AuthInit} from './modules/auth'
 import {ThemeModeProvider} from '../_metronic/partials'
 import { ToastContainer } from "react-toastify";
+import { InventoryProvider } from './modules/invoicerModules/inventory/InventoryProvider'
+import './app.css'
+
 
 const App = () => {
   return (
     <>
     <Suspense fallback={<LayoutSplashScreen />}>
       <I18nProvider>
+        <InventoryProvider>
         <LayoutProvider>
           <ThemeModeProvider>
             <AuthInit>
@@ -20,6 +24,7 @@ const App = () => {
             </AuthInit>
           </ThemeModeProvider>
         </LayoutProvider>
+      </InventoryProvider>  
       </I18nProvider>
     </Suspense>
     <ToastContainer position="bottom-right" />
