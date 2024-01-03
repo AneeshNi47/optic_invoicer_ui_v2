@@ -55,7 +55,7 @@ const InventoryDetailsModal: React.FC<Props> = ({
     >
       <Modal.Header closeButton>
         <Modal.Title className='d-flex'>
-          Inventory: <h2 className='text-primary'>{modalContent && modalContent.name}</h2>
+          <h2 className='text-primary'>{modalContent && modalContent.name}</h2>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>

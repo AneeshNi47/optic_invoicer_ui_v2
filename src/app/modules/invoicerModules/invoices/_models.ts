@@ -16,7 +16,7 @@ export interface Customer {
 }
 
 export interface Prescription {
- id: number
+  id: number
   customer: number
   left_sphere: number
   right_sphere: number
@@ -85,13 +85,12 @@ export interface InventoryItem {
 }
 
 export interface InvoiceModel {
-  next: string,
-  previous: string,
-  results: Array<InvidualInvoice>
- 
+  next: string
+  previous: string
+  results: Array<IndividualInvoice>
 }
 
-export interface InvidualInvoice {
+export interface IndividualInvoice {
   id: string
   customer: Customer
   prescription: Prescription
@@ -108,7 +107,7 @@ export interface InvidualInvoice {
   tax_percentage: string
   status: string
   balance: string
-  
+
   is_active: boolean
   is_taxable: boolean
   created_on: string

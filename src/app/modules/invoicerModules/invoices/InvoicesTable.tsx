@@ -2,14 +2,14 @@
 import React, {useEffect, useState, useRef} from 'react'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {useAuth} from '../../auth'
-import {getInvoices, generateInvoicePDF, printInvoice} from './_requests'
+import {getInvoices, generateInvoicePDF} from './_requests'
 import {InvoiceModel} from './_models'
 import {InvoiceDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
-import {InvidualInvoice} from './_models'
-import { InvoicePaymentModal } from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
-import { toast } from 'react-toastify'
-import { useInventoryContext } from '../inventory/InventoryProvider'
-
+import {IndividualInvoice} from './_models'
+import {InvoicePaymentModal} from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
+import {toast} from 'react-toastify'
+import {useInventoryContext} from '../inventory/InventoryProvider'
+import {formatDate} from '../utils'
 
 type Props = {
   className: string
@@ -19,12 +19,12 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
   const [invoices, setInvoices] = useState<InvoiceModel | any>({})
   const [showModal, setShowModal] = useState(false)
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
-  const [modalContent, setModalContent] = useState<InvidualInvoice | any>({})
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [modalContent, setModalContent] = useState<IndividualInvoice | any>({})
   const [loading, setLoading] = useState(false)
-  const [dataTodisplay, setDataToDisplay] = useState<Array<InvidualInvoice> | any[]>([])
+  const [dataToDisplay, setdataToDisplay] = useState<Array<IndividualInvoice> | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
-  const {setShouldFetchInvoice, shouldFetchInvoice} = useInventoryContext();
+  const {setShouldFetchInvoice, shouldFetchInvoice} = useInventoryContext()
   const containerRef = useRef<HTMLDivElement | null>(null)
   const handleOpenModal = (values) => {
     setShowModal(true)
@@ -55,12 +55,11 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
         }))
         setLoading(false)
 
-        setDataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
+        setdataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
       }
-      
     }
   }
 
@@ -68,17 +67,17 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await generateInvoicePDF(auth.token, values);
+        const responseData = await generateInvoicePDF(auth.token, values)
 
-        if(responseData.status == 200) {
-          const blob = new Blob([responseData.data], { type: "application/pdf" });
-          const url = window.URL.createObjectURL(blob);
-          const link = document.createElement("a");
-          link.href = url;
-          link.setAttribute("download", `${values}.pdf`);
-          document.body.appendChild(link);
-          link.click();
-          toast.success("File saved successfully")
+        if (responseData.status === 200) {
+          const blob = new Blob([responseData.data], {type: 'application/pdf'})
+          const url = window.URL.createObjectURL(blob)
+          const link = document.createElement('a')
+          link.href = url
+          link.setAttribute('download', `${values}.pdf`)
+          document.body.appendChild(link)
+          link.click()
+          toast.success('File saved successfully')
         } else {
           toast.error(responseData.data.error)
         }
@@ -92,7 +91,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
 
   useEffect(() => {
     if (initialLoad || setShouldFetchInvoice) {
-      setDataToDisplay([])
+      setdataToDisplay([])
       fetchInvoiceData()
       setShouldFetchInvoice(false)
       setInitialLoad(false)
@@ -103,8 +102,6 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     const SCROLL_THRESHOLD = 10
 
     const handleScroll = () => {
-      const isScrollingUp =
-        containerRef.current && containerRef.current.scrollTop <= SCROLL_THRESHOLD
       const isScrollingDown =
         containerRef.current &&
         containerRef.current.scrollTop + containerRef.current.clientHeight >=
@@ -142,7 +139,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
           <span className='card-label fw-bold fs-3 mb-1'>Recent Orders</span>
           <span className='text-muted mt-1 fw-semibold fs-7'>Over 500 orders</span>
         </h3>
-        <div className='card-toolbar'>
+        {/* <div className='card-toolbar'>
           <button
             type='button'
             className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
@@ -212,7 +209,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
       <div className='card-body py-3'>
         <div
@@ -235,7 +232,6 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                   </div>
                 </th>
                 <th className='min-w-150px'>Order Id</th>
-                <th className='min-w-120px'>Date</th>
                 <th className='min-w-120px'>Total</th>
                 <th className='min-w-120px'>Status</th>
                 <th className='min-w-100px text-end'>Actions</th>
@@ -243,7 +239,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
             </thead>
             <tbody>
               {invoices.results &&
-                dataTodisplay.map((invoice, index) => (
+                dataToDisplay.map((invoice, index) => (
                   <tr key={index}>
                     <td>
                       <div className='form-check form-check-sm form-check-custom form-check-solid'>
@@ -255,23 +251,30 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       </div>
                     </td>
                     <td>
-                      <a href='#' className='text-dark fw-bold text-hover-primary fs-6' onClick={() =>{
-                        handleOpenModal(invoice)
-                      }}>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary fs-6'
+                        onClick={() => {
+                          handleOpenModal(invoice)
+                        }}
+                      >
                         {invoice.invoice_number}
                       </a>
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        {formatDate(invoice.created_on)}
+                      </span>
                     </td>
-                    <td>
+                    {/* <td>
                       <a
                         href='#'
                         className='text-dark fw-bold text-hover-primary d-block mb-1 fs-6'
                       >
-                        {invoice.created_on}
+                        {formatDate(invoice.created_on)}
                       </a>
-                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                      {/* <span className='text-muted fw-semibold text-muted d-block fs-7'>
                         Code: Paid
-                      </span>
-                    </td>
+                      </span> 
+                    </td> */}
                     <td className='text-dark fw-bold text-hover-primary fs-6'>{invoice.total}</td>
                     <td>
                       <span className='badge badge-light-success'>{invoice.status}</span>
