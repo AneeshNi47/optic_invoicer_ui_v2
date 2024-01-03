@@ -1,11 +1,9 @@
-import React, {SetStateAction, useEffect, useState} from 'react'
-import {Formik, Field, Form, ErrorMessage, useFormik, validateYupSchema, useField} from 'formik'
+import React, {useState} from 'react'
+import {Formik, Field, Form, ErrorMessage} from 'formik'
 import * as Yup from 'yup'
-import {InvoiceModel} from './_models'
 import {useAuth} from '../../auth'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {addInvoiceService} from './_requests'
-import {InventoryItem} from './_models'
 import AsyncSelect from 'react-select/async'
 import {fetchSearchedCustomers, fetchSearchedInventory} from './_requests'
 import Swal from 'sweetalert2'
@@ -18,7 +16,6 @@ interface AddInvoiceProps {
 }
 
 const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
-
   interface CustomerDetails {
     phone: string
     email: string
@@ -189,13 +186,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
       tax_percentage: values.tax_percentage,
     }
 
-    console.log(dataTosend)
-
     if (auth?.token) {
       try {
         const response = await addInvoiceService(auth?.token, dataTosend)
         console.log(response)
-        if (response.status == 201) {
+        if (response.status === 201) {
           toast.success('Invoice Added Successfully')
           setShouldFetchInvoice(true)
           handleClose.handleClose()
@@ -220,7 +215,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           response &&
           response.data &&
           response.data.results.map((customer) => {
-            const labelValue = selectCusomerBy == 'phone' ? customer.phone : customer.email
+            const labelValue = selectCusomerBy === 'phone' ? customer.phone : customer.email
             return {
               label: `${labelValue}`,
               value: customer,
@@ -266,25 +261,24 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
         <Form>
           <h4>Customer Details:</h4>
           <div className='row'>
-            <div className='col-md-6'>
-              <label htmlFor='selectCustomerBy'>Select Customer by:</label>
-              <Field
-                as='select'
-                name='selectCustomerBy'
-                className='form-control my-2'
+            <div className='col-md-2'>
+              <select
+                className='form-select form-select-solid'
+                data-kt-select2='true'
+                data-placeholder='Select option'
+                data-allow-clear='true'
+                defaultValue={'phone'}
                 onChange={(e) => {
                   setSelectCusomerBy(e.target.value)
                 }}
               >
+                <option></option>
                 <option value='phone'>Phone</option>
                 <option value='email'>Email</option>
-              </Field>
+              </select>
             </div>
-          </div>
-          <div className='row'>
-            <div className='col-md-6'>
+            <div className='col-md-5'>
               <AsyncSelect
-                className='my-3'
                 styles={{
                   option: (provided, state) => ({
                     ...provided,
@@ -319,12 +313,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 }}
               />
             </div>
-            <div className='col-md-6'>
+            <div className='col-md-5'>
               {Object.keys(selectedOption).length !== 0 && (
                 <>
                   <div className='d-flex justify-content-center align-iems-center my-3'>
                     <a
-                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                      className='btn btn-icon btn-bg-light btn-active-color-success btn-color-primary btn-sm me-1'
                       onClick={() => {
                         Swal.fire({
                           title: 'Are you sure?',
@@ -351,7 +345,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                       <KTIcon iconName='pencil' className='fs-3' />
                     </a>
                     <a
-                      className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                      className='btn btn-icon btn-bg-light btn-active-color-danger btn-color-primary btn-sm me-1'
                       onClick={() => {
                         formikProps.setValues({
                           ...formikProps.values,
@@ -376,67 +370,66 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
           <Field name='id' id='id' type='hidden' />
           <div className='row'>
-            <div className='form-group col-md-4'>
-              <label htmlFor='phone'>Phone:</label>
+            <div className='form-group col-md-6'>
               <Field
                 type='text'
                 name='phone'
+                placeholder='+971XXXXXXX'
                 className='form-control my-2'
                 disabled={customeFieldDisable}
               />
               <ErrorMessage name='phone' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-4'>
-              <label htmlFor='email'>Email:</label>
+            <div className='form-group col-md-6'>
               <Field
                 type='text'
                 name='email'
+                placeholder='example@mail.com'
                 className='form-control my-2'
                 disabled={customeFieldDisable}
               />
               <ErrorMessage name='email' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-4'>
-              <label htmlFor='first_name'>First Name:</label>
-              <Field
-                type='text'
-                name='first_name'
-                className='form-control my-2'
-                disabled={customeFieldDisable}
-              />
-              <ErrorMessage name='first_name' component='div' className='error-message' />
-            </div>
           </div>
 
           <div className='row'>
-            <div className='form-group col-md-4'>
-              <label htmlFor='last_name'>Last Name:</label>
-              <Field
-                type='text'
-                name='last_name'
-                className='form-control my-2'
-                disabled={customeFieldDisable}
-              />
-              <ErrorMessage name='last_name' component='div' className='error-message' />
-            </div>
-            <div className='form-group col-md-4'>
-              <label htmlFor='gender'>Gender:</label>
+            <div className='form-group col-md-2'>
               <Field
                 as='select'
                 name='gender'
                 className='form-control my-2'
                 disabled={customeFieldDisable}
               >
-                <option value=''>Select Gender</option>
+                <option value=''>Gender</option>
                 <option value='M'>Male</option>
                 <option value='F'>Female</option>
               </Field>
               <ErrorMessage name='gender' component='div' className='error-message' />
             </div>
+            <div className='form-group col-md-5'>
+              <Field
+                type='text'
+                name='first_name'
+                placeholder='First Name'
+                className='form-control my-2'
+                disabled={customeFieldDisable}
+              />
+              <ErrorMessage name='first_name' component='div' className='error-message' />
+            </div>
+            <div className='form-group col-md-5'>
+              <Field
+                type='text'
+                name='last_name'
+                placeholder='Last Name'
+                className='form-control my-2'
+                disabled={customeFieldDisable}
+              />
+              <ErrorMessage name='last_name' component='div' className='error-message' />
+            </div>
           </div>
           <h4>Prescriptions</h4>
           <div className='row'>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='left_sphere'>Left Sphere:</label>
               <Field
                 type='number'
@@ -448,20 +441,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='left_sphere' component='div' className='error-message' />
             </div>
-
-            <div className='form-group col-md-3'>
-              <label htmlFor='right_sphere'>Right Sphere:</label>
-              <Field
-                type='number'
-                name='right_sphere'
-                className='form-control my-2'
-                min='-20'
-                max='20'
-                step='0.01'
-              />
-              <ErrorMessage name='right_sphere' component='div' className='error-message' />
-            </div>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='left_cylinder'>Left Cylinder:</label>
               <Field
                 type='number'
@@ -473,22 +453,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='left_cylinder' component='div' className='error-message' />
             </div>
-
-            <div className='form-group col-md-3'>
-              <label htmlFor='right_cylinder'>Right Cylinder:</label>
-              <Field
-                type='number'
-                name='right_cylinder'
-                className='form-control my-2'
-                min='-10'
-                max='10'
-                step='0.01'
-              />
-              <ErrorMessage name='right_cylinder' component='div' className='error-message' />
-            </div>
-          </div>
-          <div className='row'>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='left_axis'>Left Axis:</label>
               <Field
                 type='number'
@@ -499,18 +464,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='left_axis' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-3'>
-              <label htmlFor='right_axis'>Right Axis:</label>
-              <Field
-                type='number'
-                name='right_axis'
-                className='form-control my-2'
-                min='1'
-                max='181'
-              />
-              <ErrorMessage name='right_axis' component='div' className='error-message' />
-            </div>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='left_prism'>Left Prism:</label>
               <Field
                 type='number'
@@ -522,21 +476,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='left_prism' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-3'>
-              <label htmlFor='right_prism'>Right Prism:</label>
-              <Field
-                type='number'
-                name='right_prism'
-                className='form-control my-2'
-                min='0'
-                max='10'
-                step='0.01'
-              />
-              <ErrorMessage name='right_prism' component='div' className='error-message' />
-            </div>
-          </div>
-          <div className='row'>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='left_add'>Left Add:</label>
               <Field
                 type='number'
@@ -548,7 +488,64 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='left_add' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
+              <label htmlFor='left_ipd'>Left Ipd:</label>
+              <Field type='number' name='left_ipd' className='form-control my-2' />
+              <ErrorMessage name='left_ipd' component='div' className='error-message' />
+            </div>
+          </div>
+
+          <div className='row'></div>
+          <div className='row'>
+            <div className='form-group col-md-2'>
+              <label htmlFor='right_sphere'>Right Sphere:</label>
+              <Field
+                type='number'
+                name='right_sphere'
+                className='form-control my-2'
+                min='-20'
+                max='20'
+                step='0.01'
+              />
+              <ErrorMessage name='right_sphere' component='div' className='error-message' />
+            </div>
+
+            <div className='form-group col-md-2'>
+              <label htmlFor='right_cylinder'>Right Cylinder:</label>
+              <Field
+                type='number'
+                name='right_cylinder'
+                className='form-control my-2'
+                min='-10'
+                max='10'
+                step='0.01'
+              />
+              <ErrorMessage name='right_cylinder' component='div' className='error-message' />
+            </div>
+            <div className='form-group col-md-2'>
+              <label htmlFor='right_axis'>Right Axis:</label>
+              <Field
+                type='number'
+                name='right_axis'
+                className='form-control my-2'
+                min='1'
+                max='181'
+              />
+              <ErrorMessage name='right_axis' component='div' className='error-message' />
+            </div>
+            <div className='form-group col-md-2'>
+              <label htmlFor='right_prism'>Right Prism:</label>
+              <Field
+                type='number'
+                name='right_prism'
+                className='form-control my-2'
+                min='0'
+                max='10'
+                step='0.01'
+              />
+              <ErrorMessage name='right_prism' component='div' className='error-message' />
+            </div>
+            <div className='form-group col-md-2'>
               <label htmlFor='right_add'>Right Add:</label>
               <Field
                 type='number'
@@ -560,39 +557,141 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='right_add' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-3'>
-              <label htmlFor='left_ipd'>Left Ipd:</label>
-              <Field type='number' name='left_ipd' className='form-control my-2' />
-              <ErrorMessage name='left_ipd' component='div' className='error-message' />
-            </div>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-2'>
               <label htmlFor='right_ipd'>Right Ipd:</label>
               <Field type='number' name='right_ipd' className='form-control my-2' />
               <ErrorMessage name='right_ipd' component='div' className='error-message' />
             </div>
           </div>
           <div className='row'>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-6'>
               <label htmlFor='pupillary_distance'>Pupillary Distance:</label>
               <Field type='number' name='pupillary_distance' className='form-control my-2' />
               <ErrorMessage name='pupillary_distance' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-3'>
+            <div className='form-group col-md-6'>
               <label htmlFor='additional_notes'>Additional Notes:</label>
               <Field type='text-area' name='additional_notes' className='form-control my-2' />
               <ErrorMessage name='additional_notes' component='div' className='error-message' />
             </div>
           </div>
 
+          <h4>Inventory Items</h4>
           <div className='row'>
-            <div className='form-group col-md-4'>
-              <label htmlFor='date'>Date:</label>
-              <Field type='date' name='date' className='form-control my-2' />
-              <ErrorMessage name='date' component='div' className='error-message' />
+            <div className='col-md-2'>
+              <select
+                className='form-select form-select-solid'
+                data-kt-select2='true'
+                data-placeholder='Select option'
+                data-allow-clear='true'
+                defaultValue={'name'}
+                name='selectInventoryBy'
+                onChange={(e) => {
+                  setSelectCusomerBy(e.target.value)
+                }}
+              >
+                <option value='name'>Name</option>
+                <option value='sku'>Sku</option>
+                <option value='type'>Type</option>
+              </select>
             </div>
-            <div className='form-group col-md-4'>
+            <div className='col-md-6 mt-3'>
+              <AsyncSelect
+                styles={{
+                  option: (provided, state) => ({
+                    ...provided,
+                    color: 'black', // set the desired text color
+                  }),
+                }}
+                cacheOptions
+                loadOptions={(inputValue) => loadOptionsInventory(inputValue)}
+                defaultOptions
+                onChange={(selectedOption: any | {}) => {
+                  setSelectedInventoryOption((prev) => {
+                    return [...prev, selectedOption.value]
+                  })
+                }}
+                onInputChange={(inputValue) => {
+                  setSearchInventoryInput((prevInput) => inputValue)
+                  console.log('Input Value:', inputValue)
+                }}
+              />
+            </div>
+          </div>
+          {selectedInventoryOption.length > 0 && (
+            <div className='card-body py-3'>
+              {/* begin::Table container */}
+              <div className='table-responsive'>
+                {/* begin::Table */}
+                <table className='table align-middle gs-0 gy-4'>
+                  {/* begin::Table head */}
+                  <thead>
+                    <tr className='fw-bold text-muted bg-light'>
+                      <th className='min-w-200px'>Item name</th>
+                      <th className='ps-4 min-w-125px'>Price</th>
+                      <th className='min-w-125px'>Quantity</th>
+                      <th className='min-w-80px'>Action</th>
+                    </tr>
+                  </thead>
+                  {/* end::Table head */}
+                  {/* begin::Table body */}
+                  <tbody>
+                    {selectedInventoryOption.length > 0 &&
+                      selectedInventoryOption.map((element) => {
+                        const itemId = element.id // Assuming each item has a unique id
+
+                        return (
+                          <tr key={itemId}>
+                            <td className='text-primary'>
+                              {element.name}
+                              <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                                {element.item_type}
+                              </span>
+                            </td>
+                            <td>{element.sale_value}</td>
+                            <td>
+                              <div className='d-flex align-items-center'>
+                                <button
+                                  type='button'
+                                  className='btn btn-light btn-sm'
+                                  onClick={() => handleQuantityChange(itemId, -1)}
+                                >
+                                  -
+                                </button>
+                                <span className='mx-2'>{itemQuantities[itemId] || 0}</span>
+                                <button
+                                  type='button'
+                                  className='btn btn-light btn-sm'
+                                  onClick={() => handleQuantityChange(itemId, 1)}
+                                >
+                                  +
+                                </button>
+                              </div>
+                            </td>
+                            <td>
+                              <a
+                                className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                                onClick={() => handleRemoveItem(itemId)}
+                              >
+                                <KTIcon iconName='trash' className='fs-3' />
+                              </a>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                  </tbody>
+                  {/* end::Table body */}
+                </table>
+                {/* end::Table */}
+              </div>
+              {/* end::Table container */}
+            </div>
+          )}
+
+          <div className='row'>
+            <div className='form-group col-md-8'>
               <label htmlFor='remarks'>Remarks:</label>
-              <Field type='text' name='remarks' className='form-control my-2' />
+              <Field type='textArea' name='remarks' className='form-control my-2' />
               <ErrorMessage name='remarks' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-4'>
@@ -626,123 +725,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               <ErrorMessage name='tax_percentage' component='div' className='error-message' />
             </div>
           </div>
-
-          <h4>Inventory Items</h4>
-          <div className='row'>
-            <div className='col-md-6'>
-              <label htmlFor='selectInventoryBy'>Select Inventory by:</label>
-              <Field
-                as='select'
-                name='selectInventoryBy'
-                className='form-control my-2'
-                onChange={(e) => {
-                  setSelectInventoryBy(e.target.value)
-                }}
-              >
-                <option value='name'>Name</option>
-                <option value='sku'>Sku</option>
-                <option value='type'>Type</option>
-              </Field>
-            </div>
-          </div>
-          <div className='col-md-6 mt-3'>
-            <AsyncSelect
-              styles={{
-                option: (provided, state) => ({
-                  ...provided,
-                  color: 'black', // set the desired text color
-                }),
-              }}
-              cacheOptions
-              loadOptions={(inputValue) => loadOptionsInventory(inputValue)}
-              defaultOptions
-              onChange={(selectedOption: any | {}) => {
-                // Handle the selected customer option
-                console.log('Selected Customer:', selectedOption)
-
-                // Set form values based on the selected customer
-
-                // Update the state with the selected option
-                setSelectedInventoryOption((prev) => {
-                  return [...prev, selectedOption.value]
-                })
-              }}
-              onInputChange={(inputValue) => {
-                setSearchInventoryInput((prevInput) => inputValue)
-                console.log('Input Value:', inputValue)
-              }}
-            />
-          </div>
-          {selectedInventoryOption.length > 0 && (
-            <div className='card-body py-3'>
-              {/* begin::Table container */}
-              <div className='table-responsive'>
-                {/* begin::Table */}
-                <table className='table align-middle gs-0 gy-4'>
-                  {/* begin::Table head */}
-                  <thead>
-                    <tr className='fw-bold text-muted bg-light'>
-                      <th className='min-w-125px'>Item type</th>
-                      <th className='min-w-200px'>Item name</th>
-                      <th className='ps-4 min-w-125px'>Cost Value</th>
-                      <th className='ps-4 min-w-125px'>Sale Value</th>
-                      <th className='min-w-125px'>Quantity</th>
-                      <th className='ps-4 min-w-300px rounded-start'>Description</th>
-                      <th className='min-w-80px'>Action</th>
-                    </tr>
-                  </thead>
-                  {/* end::Table head */}
-                  {/* begin::Table body */}
-                  <tbody>
-                    {selectedInventoryOption.length > 0 &&
-                      selectedInventoryOption.map((element) => {
-                        const itemId = element.id // Assuming each item has a unique id
-
-                        return (
-                          <tr key={itemId}>
-                            <td>{element.item_type}</td>
-                            <td className='text-primary'>{element.name}</td>
-                            <td>{element.cost_value}</td>
-                            <td>{element.sale_value}</td>
-                            <td>
-                              <div className='d-flex align-items-center'>
-                                <button
-                                  type='button'
-                                  className='btn btn-light btn-sm'
-                                  onClick={() => handleQuantityChange(itemId, -1)}
-                                >
-                                  -
-                                </button>
-                                <span className='mx-2'>{itemQuantities[itemId] || 0}</span>
-                                <button
-                                  type='button'
-                                  className='btn btn-light btn-sm'
-                                  onClick={() => handleQuantityChange(itemId, 1)}
-                                >
-                                  +
-                                </button>
-                              </div>
-                            </td>
-                            <td>{element.description}</td>
-                            <td>
-                              <a
-                                className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                                onClick={() => handleRemoveItem(itemId)}
-                              >
-                                <KTIcon iconName='trash' className='fs-3' />
-                              </a>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                  </tbody>
-                  {/* end::Table body */}
-                </table>
-                {/* end::Table */}
-              </div>
-              {/* end::Table container */}
-            </div>
-          )}
           <div className='row mt-5'>
             <div className='form-group col-md-12 d-flex justify-content-center'>
               <button type='submit' className='btn btn-primary'>
