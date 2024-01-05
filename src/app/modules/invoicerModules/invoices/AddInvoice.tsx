@@ -9,6 +9,7 @@ import {fetchSearchedCustomers, fetchSearchedInventory} from './_requests'
 import Swal from 'sweetalert2'
 import {toast} from 'react-toastify'
 import {useInventoryContext} from '../inventory/InventoryProvider'
+import {formatDate, PrescriptionTable} from '../utils'
 
 interface AddInvoiceProps {
   //   onSubmit: (formData: InvoiceModel) => void;
@@ -25,12 +26,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   }
   const [searchInput, setSearchInput] = useState('')
   const [selectedOption, setSelectedOption] = useState<CustomerDetails | any>({})
-  const [customeFieldDisable, setCustomerFieldDisable] = useState(false)
-  const [selectCusomerBy, setSelectCusomerBy] = useState('phone')
+  const [customerFieldDisable, setCustomerFieldDisable] = useState(false)
+  const [selectCustomerBy, setSelectCustomerBy] = useState('phone')
   const [selectInventoryBy, setSelectInventoryBy] = useState('name')
   const [selectedPrescription, setSelectedPrescription] = useState(null)
 
-  const [customePrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
+  const [customerPrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
 
   const [searchInventoryInput, setSearchInventoryInput] = useState('')
   const [selectedInventoryOption, setSelectedInventoryOption] = useState<any>([])
@@ -86,9 +87,9 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     date: '',
     remarks: '',
     delivery_date: '',
-    discount: '',
+    discount: 0,
     advance: 0,
-    advance_payment_mode: '',
+    advance_payment_mode: 'Cash',
     tax_percentage: 0,
   }
 
@@ -136,23 +137,23 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     delivery_date: Yup.string(),
     discount: Yup.string(),
     advance: Yup.string(),
-    advance_payment_mode: Yup.string().required("Advance Payment mode is required"),
+    advance_payment_mode: Yup.string().required('Advance Payment mode is required'),
     tax_percentage: Yup.string(),
   })
 
   function formatDateToYYYYMMDD(date) {
     if (!(date instanceof Date)) {
-      throw new Error('Invalid date object.');
+      throw new Error('Invalid date object.')
     }
     console.log(date)
-  
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
+
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
 
     console.log(`${year}-${month}-${day}`)
-  
-    return `${year}-${month}-${day}`;
+
+    return `${year}-${month}-${day}`
   }
 
   const handleSubmit = async (values) => {
@@ -170,7 +171,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
         ...(values.id && {id: values.id}),
       },
       prescription: {
-        
         left_sphere: parseFloat(values.left_sphere), // 2.00
         right_sphere: parseFloat(values.right_sphere), // 2.00
         left_cylinder: parseFloat(values.left_cylinder), // 2.00
@@ -222,13 +222,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const loadOptions = async (inputValue) => {
     try {
       if (auth?.token && inputValue) {
-        const response = await fetchSearchedCustomers(auth.token, inputValue, selectCusomerBy)
+        const response = await fetchSearchedCustomers(auth.token, inputValue, selectCustomerBy)
         console.log(response.data)
         const options =
           response &&
           response.data &&
           response.data.results.map((customer) => {
-            const labelValue = selectCusomerBy === 'phone' ? customer.phone : customer.email
+            const labelValue = selectCustomerBy === 'phone' ? customer.phone : customer.email
             return {
               label: `${labelValue}`,
               value: customer,
@@ -247,7 +247,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     try {
       if (auth?.token && inputValue) {
         const response = await fetchSearchedInventory(auth.token, inputValue, selectInventoryBy)
-        console.log(response.data)
         const options =
           response &&
           response.data &&
@@ -282,7 +281,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 data-allow-clear='true'
                 defaultValue={'phone'}
                 onChange={(e) => {
-                  setSelectCusomerBy(e.target.value)
+                  setSelectCustomerBy(e.target.value)
                 }}
               >
                 <option></option>
@@ -330,7 +329,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               {Object.keys(selectedOption).length !== 0 && (
                 <>
                   <div className='d-flex justify-content-center align-iems-center my-3'>
-                    <a
+                    <button
                       className='btn btn-icon btn-bg-light btn-active-color-success btn-color-primary btn-sm me-1'
                       onClick={() => {
                         Swal.fire({
@@ -358,12 +357,10 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                       }}
                     >
                       <KTIcon iconName='pencil' className='fs-3' />
-                    </a>
-                    <a
+                    </button>
+                    <button
                       className='btn btn-icon btn-bg-light btn-active-color-danger btn-color-primary btn-sm me-1'
                       onClick={() => {
-                      
-
                         setSelectedOption({})
                         formikProps.setValues({
                           ...formikProps.values,
@@ -386,14 +383,14 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                           right_sphere: '',
                           pupillary_distance: '',
                           additional_notes: '',
-                          prescriptionId: ''
+                          prescriptionId: '',
                         })
                         setCustomerFieldDisable(false)
                         setCustomerPrescriptionDisable(false)
                       }}
                     >
                       <KTIcon iconName='trash' className='fs-3' />
-                    </a>
+                    </button>
                   </div>
                 </>
               )}
@@ -408,7 +405,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 name='phone'
                 placeholder='+971XXXXXXX'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
+                disabled={customerFieldDisable}
               />
               <ErrorMessage name='phone' component='div' className='error-message' />
             </div>
@@ -418,7 +415,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 name='email'
                 placeholder='example@mail.com'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
+                disabled={customerFieldDisable}
               />
               <ErrorMessage name='email' component='div' className='error-message' />
             </div>
@@ -430,7 +427,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 as='select'
                 name='gender'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
+                disabled={customerFieldDisable}
               >
                 <option value=''>Gender</option>
                 <option value='M'>Male</option>
@@ -444,7 +441,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 name='first_name'
                 placeholder='First Name'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
+                disabled={customerFieldDisable}
               />
               <ErrorMessage name='first_name' component='div' className='error-message' />
             </div>
@@ -454,7 +451,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 name='last_name'
                 placeholder='Last Name'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
+                disabled={customerFieldDisable}
               />
               <ErrorMessage name='last_name' component='div' className='error-message' />
             </div>
@@ -469,21 +466,16 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                   {/* begin::Table head */}
                   <thead>
                     <tr className='fw-bold text-muted bg-light'>
-                      <th className='ps-4 min-w-125px'>Action</th>
-                      <th className='ps-4 min-w-250px'>Created On</th>
-                      <th className='ps-4 min-w-125px rounded-start'>Left Add</th>
-                      <th className='min-w-125px'>Right Add</th>
-                      <th className='min-w-125px'>Left Axis</th>
-                      <th className='min-w-125px'>Right Axis</th>
-                      <th className='min-w-125px'>Left Cyliner</th>
-                      <th className='ps-4 min-w-125px'>Right Cylinder</th>
-                      <th className='ps-4 min-w-125px'>Left Ipd</th>
-                      <th className='ps-4 min-w-125px'>Right Ipd</th>
-                      <th className='ps-4 min-w-125px'>Left Prism</th>
-                      <th className='ps-4 min-w-125px'>Right Prism</th>
-                      <th className='ps-4 min-w-125px'>Left Sphere</th>
-                      <th className='ps-4 min-w-125px'>Right Sphere</th>
-                      <th className='ps-4 min-w-125px'>Pupilliary Distance</th>
+                      <th className='ps-4 min-w-50'>Action</th>
+                      <th className='ps-4 min-w-100'>Created On</th>
+                      <th className='ps-4 min-w-50px'></th>
+                      <th className='ps-4 min-w-50px'>ADD</th>
+                      <th className='ps-4 min-w-50px'>AXIS</th>
+                      <th className='ps-4 min-w-50px'>CYL</th>
+                      <th className='ps-4 min-w-50px'>IPD</th>
+                      <th className='ps-4 min-w-50px'>PRISM</th>
+                      <th className='ps-4 min-w-50px'>SPH</th>
+                      <th className='ps-4 min-w-125px'>Pupillary Distance</th>
                       <th className='ps-4 min-w-125px'>Additional Notes</th>
                     </tr>
                   </thead>
@@ -494,76 +486,57 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                       selectedOption.prescriptions.map((element) => {
                         return (
                           <tr>
-                            <td>
-                              <td>
-                                <div className='form-check form-check-sm form-check-custom form-check-solid'>
-                                  <input
-                                    className='form-check-input widget-13-check'
-                                    type='checkbox'
-                                    checked={selectedPrescription === element}
-                                    onChange={() => {
-                                      // Check if the checkbox is currently checked
-                                      const isChecked = selectedPrescription === element
+                            <td style={{alignContent: 'center'}}>
+                              <div className='form-check form-check-sm form-check-custom form-check-solid'>
+                                <input
+                                  className='form-check-input widget-13-check'
+                                  type='checkbox'
+                                  checked={selectedPrescription === element}
+                                  onChange={() => {
+                                    // Check if the checkbox is currently checked
+                                    const isChecked = selectedPrescription === element
 
-                                      if (!isChecked) {
-                                        setCustomerPrescriptionDisable(true)
-                                      } else {
-                                        setCustomerPrescriptionDisable(false)
-                                      }
+                                    if (!isChecked) {
+                                      setCustomerPrescriptionDisable(true)
+                                    } else {
+                                      setCustomerPrescriptionDisable(false)
+                                    }
 
-                                      // Update form values based on checkbox state
-                                      formikProps.setValues({
-                                        ...formikProps.values,
-                                        left_add: isChecked ? '' : element?.left_add || '',
-                                        right_add: isChecked ? '' : element?.right_add || '',
-                                        left_axis: isChecked ? '' : element?.left_axis || '',
-                                        right_axis: isChecked ? '' : element?.right_axis || '',
-                                        left_cylinder: isChecked
-                                          ? ''
-                                          : element?.left_cylinder || '',
-                                        right_cylinder: isChecked
-                                          ? ''
-                                          : element?.right_cylinder || '',
-                                        left_ipd: isChecked ? '' : element?.left_ipd || '',
-                                        right_ipd: isChecked ? '' : element?.right_ipd || '',
-                                        left_prism: isChecked ? '' : element?.left_prism || '',
-                                        right_prism: isChecked ? '' : element?.right_prism || '',
-                                        left_sphere: isChecked ? '' : element?.left_sphere || '',
-                                        right_sphere: isChecked ? '' : element?.right_sphere || '',
-                                        pupillary_distance: isChecked
-                                          ? ''
-                                          : element?.pupillary_distance || '',
-                                        additional_notes: isChecked
-                                          ? ''
-                                          : element?.additional_notes || '',
-                                        prescriptionId: isChecked
+                                    // Update form values based on checkbox state
+                                    formikProps.setValues({
+                                      ...formikProps.values,
+                                      left_add: isChecked ? '' : element?.left_add || '',
+                                      right_add: isChecked ? '' : element?.right_add || '',
+                                      left_axis: isChecked ? '' : element?.left_axis || '',
+                                      right_axis: isChecked ? '' : element?.right_axis || '',
+                                      left_cylinder: isChecked ? '' : element?.left_cylinder || '',
+                                      right_cylinder: isChecked
                                         ? ''
-                                        : element?.id || ''
-                                      })
+                                        : element?.right_cylinder || '',
+                                      left_ipd: isChecked ? '' : element?.left_ipd || '',
+                                      right_ipd: isChecked ? '' : element?.right_ipd || '',
+                                      left_prism: isChecked ? '' : element?.left_prism || '',
+                                      right_prism: isChecked ? '' : element?.right_prism || '',
+                                      left_sphere: isChecked ? '' : element?.left_sphere || '',
+                                      right_sphere: isChecked ? '' : element?.right_sphere || '',
+                                      pupillary_distance: isChecked
+                                        ? ''
+                                        : element?.pupillary_distance || '',
+                                      additional_notes: isChecked
+                                        ? ''
+                                        : element?.additional_notes || '',
+                                      prescriptionId: isChecked ? '' : element?.id || '',
+                                    })
 
-                                      // Toggle the selected prescription state
-                                      setSelectedPrescription((prevSelected) =>
-                                        prevSelected === element ? null : element
-                                      )
-                                    }}
-                                  />
-                                </div>
-                              </td>
+                                    // Toggle the selected prescription state
+                                    setSelectedPrescription((prevSelected) =>
+                                      prevSelected === element ? null : element
+                                    )
+                                  }}
+                                />
+                              </div>
                             </td>
-                            <td>{element?.created_on}</td>
-                            <td>{element?.left_add}</td>
-                            <td>{element?.right_add}</td>
-                            <td>{element?.left_axis}</td>
-                            <td>{element?.right_axis}</td>
-                            <td>{element?.left_cylinder}</td>
-                            <td>{element?.right_cylinder}</td>
-                            <td>{element?.left_ipd}</td>
-                            <td>{element?.right_ipd}</td>
-                            <td>{element?.left_prism}</td>
-                            <td>{element?.right_prism}</td>
-                            <td>{element?.left_sphere}</td>
-                            <td>{element?.right_sphere}</td>
-                            <td>{element?.pupillary_distance}</td>
+                            <PrescriptionTable prescriptionData={element} />
                           </tr>
                         )
                       })}
@@ -574,9 +547,16 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           )}
 
           <div className='row'>
-          <Field name='prescriptionId' id='prescriptionId' type='hidden' />
+            <div className='form-group col-md-2 text-center'> SPH</div>
+            <div className='form-group col-md-2 text-center'> CYL</div>
+            <div className='form-group col-md-2 text-center'> AXIS</div>
+            <div className='form-group col-md-2 text-center'> PRISM</div>
+            <div className='form-group col-md-2 text-center'> ADD</div>
+            <div className='form-group col-md-2 text-center'> IPD</div>
+          </div>
+          <div className='row'>
+            <Field name='prescriptionId' id='prescriptionId' type='hidden' />
             <div className='form-group col-md-2'>
-              <label htmlFor='left_sphere'>Left Sphere:</label>
               <Field
                 type='number'
                 name='left_sphere'
@@ -584,12 +564,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='-20'
                 max='20'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_sphere' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='left_cylinder'>Left Cylinder:</label>
               <Field
                 type='number'
                 name='left_cylinder'
@@ -597,24 +576,22 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='-10'
                 max='10'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_cylinder' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='left_axis'>Left Axis:</label>
               <Field
                 type='number'
                 name='left_axis'
                 className='form-control my-2'
                 min='1'
                 max='181'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_axis' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='left_prism'>Left Prism:</label>
               <Field
                 type='number'
                 name='left_prism'
@@ -622,12 +599,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='0'
                 max='10'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_prism' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='left_add'>Left Add:</label>
               <Field
                 type='number'
                 name='left_add'
@@ -635,17 +611,16 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='0'
                 max='4'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_add' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='left_ipd'>Left Ipd:</label>
               <Field
                 type='number'
                 name='left_ipd'
                 className='form-control my-2'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='left_ipd' component='div' className='error-message' />
             </div>
@@ -654,7 +629,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           <div className='row'></div>
           <div className='row'>
             <div className='form-group col-md-2'>
-              <label htmlFor='right_sphere'>Right Sphere:</label>
               <Field
                 type='number'
                 name='right_sphere'
@@ -662,13 +636,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='-20'
                 max='20'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_sphere' component='div' className='error-message' />
             </div>
 
             <div className='form-group col-md-2'>
-              <label htmlFor='right_cylinder'>Right Cylinder:</label>
               <Field
                 type='number'
                 name='right_cylinder'
@@ -676,24 +649,22 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='-10'
                 max='10'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_cylinder' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='right_axis'>Right Axis:</label>
               <Field
                 type='number'
                 name='right_axis'
                 className='form-control my-2'
                 min='1'
                 max='181'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_axis' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='right_prism'>Right Prism:</label>
               <Field
                 type='number'
                 name='right_prism'
@@ -701,12 +672,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='0'
                 max='10'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_prism' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='right_add'>Right Add:</label>
               <Field
                 type='number'
                 name='right_add'
@@ -714,39 +684,38 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 min='0'
                 max='4'
                 step='0.01'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_add' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-2'>
-              <label htmlFor='right_ipd'>Right Ipd:</label>
               <Field
                 type='number'
                 name='right_ipd'
                 className='form-control my-2'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='right_ipd' component='div' className='error-message' />
             </div>
           </div>
           <div className='row'>
             <div className='form-group col-md-6'>
-              <label htmlFor='pupillary_distance'>Pupillary Distance:</label>
               <Field
                 type='number'
                 name='pupillary_distance'
+                placeholder='Pupillary Distance'
                 className='form-control my-2'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='pupillary_distance' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-6'>
-              <label htmlFor='additional_notes'>Additional Notes:</label>
               <Field
                 type='text-area'
                 name='additional_notes'
+                placeholder='Additional Notes....'
                 className='form-control my-2'
-                disabled={customePrescriptionDisable}
+                disabled={customerPrescriptionDisable}
               />
               <ErrorMessage name='additional_notes' component='div' className='error-message' />
             </div>
@@ -763,7 +732,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 defaultValue={'name'}
                 name='selectInventoryBy'
                 onChange={(e) => {
-                  setSelectCusomerBy(e.target.value)
+                  setSelectCustomerBy(e.target.value)
                 }}
               >
                 <option value='name'>Name</option>
@@ -789,7 +758,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 }}
                 onInputChange={(inputValue) => {
                   setSearchInventoryInput((prevInput) => inputValue)
-                  console.log('Input Value:', inputValue)
                 }}
               />
             </div>
@@ -866,35 +834,50 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
           <div className='row'>
             <div className='form-group col-md-8'>
-              <label htmlFor='remarks'>Remarks:</label>
-              <Field type='textArea' name='remarks' className='form-control my-2' />
+              <Field
+                type='textArea'
+                name='remarks'
+                placeholder='Remarks'
+                className='form-control my-2'
+              />
               <ErrorMessage name='remarks' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-4'>
-              <label htmlFor='delivery_date'>Delivery Date:</label>
-              <Field type='date' name='delivery_date' className='form-control my-2' />
+              <Field
+                type='date'
+                name='delivery_date'
+                placeholder='Delivery Date'
+                className='form-control my-2'
+              />
               <ErrorMessage name='delivery_date' component='div' className='error-message' />
             </div>
           </div>
 
           <div className='row'>
             <div className='form-group col-md-4'>
-              <label htmlFor='discount'>Discount:</label>
-              <Field type='number' name='discount' className='form-control my-2' />
+              <Field
+                type='number'
+                name='discount'
+                placeholder='Discount'
+                className='form-control my-2'
+              />
               <ErrorMessage name='discount' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-4'>
-              <label htmlFor='advance'>Advance:</label>
-              <Field type='number' name='advance' className='form-control my-2' />
+              <Field
+                type='number'
+                name='advance'
+                placeholder='Advance'
+                className='form-control my-2'
+              />
               <ErrorMessage name='advance' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-4'>
-              <label htmlFor='advance_payment_mode'>Advance Payment Mode:</label>
               <Field
                 as='select'
                 name='advance_payment_mode'
+                placeholder='Payment Mode'
                 className='form-control my-2'
-                disabled={customeFieldDisable}
               >
                 <option value=''>Select</option>
                 <option value='Card'>Card</option>
