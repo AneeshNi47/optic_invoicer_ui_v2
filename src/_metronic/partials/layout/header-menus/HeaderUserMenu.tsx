@@ -20,8 +20,7 @@ const HeaderUserMenu: FC = () => {
 
           <div className='d-flex flex-column'>
             <div className='fw-bolder d-flex align-items-center fs-5'>
-              {currentUser?.staff_details?.first_name} {currentUser?.staff_details?.first_name}
-              <span className='badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2'>Pro</span>
+              {currentUser?.staff_details?.first_name} {currentUser?.staff_details?.last_name}
             </div>
             <a href='#' className='fw-bold text-muted text-hover-primary fs-7'>
               {currentUser?.email}
@@ -32,12 +31,13 @@ const HeaderUserMenu: FC = () => {
 
       <div className='separator my-2'></div>
 
-      {/* <div className='menu-item px-5'>
+      <div className='menu-item px-5'>
         <Link to={'/crafted/pages/profile'} className='menu-link px-5'>
           My Profile
         </Link>
-      </div> */}
+      </div>
 
+      {/*
       <div className='menu-item px-5'>
         <a href='#' className='menu-link px-5'>
           <span className='menu-text'>My Projects</span>
@@ -46,7 +46,6 @@ const HeaderUserMenu: FC = () => {
           </span>
         </a>
       </div>
-
       <div
         className='menu-item px-5'
         data-kt-menu-trigger='hover'
@@ -89,6 +88,7 @@ const HeaderUserMenu: FC = () => {
           </div>
 
           <div className='separator my-2'></div>
+    
 
           <div className='menu-item px-3'>
             <div className='menu-content px-3'>
@@ -112,8 +112,8 @@ const HeaderUserMenu: FC = () => {
           My Statements
         </a>
       </div>
-
       <div className='separator my-2'></div>
+      */}
 
       <Languages />
 

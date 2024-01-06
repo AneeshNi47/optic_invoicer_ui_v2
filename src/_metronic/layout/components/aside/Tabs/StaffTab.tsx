@@ -23,12 +23,13 @@ const staffOptions: ReadonlyArray<{key: string; image: string; title: string}> =
 const StaffTab = () => {
   return (
     <div className='m-0'>
-      {/* begin::Toolbar */}
+      {/*
+       begin::Toolbar 
       <div className='d-flex mb-10'>
         <Search />
-        {/* begin::Filter */}
+        {/* begin::Filter
         <div className='flex-shrink-0 ms-2'>
-          {/* begin::Menu toggle */}
+          {/* begin::Menu toggle 
           <button
             type='button'
             className='btn btn-icon btn-bg-light btn-active-icon-primary btn-color-gray-400'
@@ -37,11 +38,11 @@ const StaffTab = () => {
           >
             <KTIcon iconName='filter' className='fs-2' />
           </button>
-          {/* end::Menu toggle */}
+          {/* end::Menu toggle 
 
           <Dropdown1 />
         </div>
-        {/* end::Filter */}
+        {/* end::Filter 
       </div>
       {/* end::Toolbar */}
 

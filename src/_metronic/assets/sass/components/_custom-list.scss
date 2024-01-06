@@ -4,6 +4,8 @@
 
 // Hover Style
 .custom-list {
+  max-width: 100%;
+  overflow-x: auto;
   cursor: pointer;
   @include border-radius($border-radius);
 

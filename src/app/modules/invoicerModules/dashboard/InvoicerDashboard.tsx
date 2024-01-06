@@ -2,13 +2,11 @@ import {useEffect, useState} from 'react'
 import {useIntl} from 'react-intl'
 import {PageLink, PageTitle} from '../../../../_metronic/layout/core'
 import {StatisticsWidget4} from '../../../../_metronic/partials/widgets'
-import {SelectLocationModal} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
 import {getOrganisations} from './requests'
 import {InvoicerDashboardModel} from './_models'
-import {CreateInvoiceModal} from '../../../../_metronic/partials'
-import { KTIcon } from '../../../../_metronic/helpers'
-import { toast } from 'react-toastify'
+import {KTIcon} from '../../../../_metronic/helpers'
+import {toast} from 'react-toastify'
 
 const dashboardBreadCrumbs: Array<PageLink> = [
   {
@@ -23,17 +21,8 @@ const DashboardPage = () => {
   const {auth} = useAuth()
   const [organisationItems, setOrganisationItems] = useState<InvoicerDashboardModel | any>({})
   const [loading, setLoading] = useState(false)
-  const [showModal, setShowModal] = useState(false)
-  const [currentPath, setCurrentPath] = useState('')
-  const [iconClickCount, setIconClickCount] = useState(0);
+  const [iconClickCount, setIconClickCount] = useState(0)
 
-  const handleOpenModal = () => {
-    setShowModal(true)
-  }
-
-  const handleCloseModal = () => {
-    setShowModal(false)
-  }
   const fetchInventoryData = async () => {
     if (auth?.token) {
       setLoading(true)
@@ -66,28 +55,28 @@ const DashboardPage = () => {
 
   const handleIconClick = () => {
     // Update the state to trigger a re-render
-    setIconClickCount((prevCount) => prevCount + 1);
-  };
+    setIconClickCount((prevCount) => prevCount + 1)
+  }
 
   return (
     <>
       {/* begin::Row */}
       <div className='d-flex justify-content-end m-5'>
-      <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
-                        onClick={handleIconClick}
-                      >
-                        <KTIcon iconName='arrows-circle' className='fs-3' />
-                      </a>
+        <button
+          className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+          onClick={handleIconClick}
+        >
+          <KTIcon iconName='arrows-circle' className='fs-3' />
+        </button>
         {/* <span onClick={handleIconClick}><KTIcon iconName='arrows-circle' className='fs-1 text-primary text-lg-start symbol-50px' /></span> */}
       </div>
-      
+
       <div className='row gy-5 g-xl-8'>
         {/* begin::Col */}
         <div
           className='col-xxl-4'
           onClick={() => {
-           window.location.href ="/organization/invoices"
+            window.location.href = '/organization/invoices'
           }}
         >
           <StatisticsWidget4
@@ -103,17 +92,9 @@ const DashboardPage = () => {
         <div
           className='col-xxl-4'
           onClick={() => {
-           window.location.href ='/organization/inventory'
+            window.location.href = '/organization/inventory'
           }}
         >
-          {/* <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-5 mb-xl-4'
-            svgIcon='element-11'
-            color='danger'
-            description='Weekly Income'
-            change='750$'
-          /> */}
-
           <StatisticsWidget4
             className='card-xxl-stretch-50 mb-xl-4'
             svgIcon='basket'
@@ -124,10 +105,11 @@ const DashboardPage = () => {
             }`}
           />
         </div>
-        <div className='col-xxl-4'
+        <div
+          className='col-xxl-4'
           onClick={() => {
-            window.location.href ='/organization/customers'
-           }}
+            window.location.href = '/organization/customers'
+          }}
         >
           <StatisticsWidget4
             className='card-xxl-stretch-50 mb-5 mb-xl-4'
@@ -138,14 +120,6 @@ const DashboardPage = () => {
               organisationItems.total_customers ? organisationItems.total_customers : '...'
             }`}
           />
-
-          {/* <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-xl-4'
-            svgIcon='basket'
-            color='success'
-            description='Sales Change'
-            change='+259'
-          /> */}
         </div>
       </div>
       {/* end::Row */}
@@ -153,7 +127,7 @@ const DashboardPage = () => {
   )
 }
 
-const InvoicerDashboardWrapper = () => {
+const InvoiceDashboardWrapper = () => {
   const intl = useIntl()
   return (
     <>
@@ -165,4 +139,4 @@ const InvoicerDashboardWrapper = () => {
   )
 }
 
-export {InvoicerDashboardWrapper}
+export {InvoiceDashboardWrapper}

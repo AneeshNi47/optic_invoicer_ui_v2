@@ -7,18 +7,17 @@ import {useAuth} from '../../auth'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
 
-import { useInventoryContext } from './InventoryProvider'
+import {useInventoryContext} from './InventoryProvider'
 
 interface AddInventoryProps {
   handleClose: () => void
 }
 
-const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
- 
-  const { setShouldFetchInventory } = useInventoryContext();
+const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
+  const {setShouldFetchInventory} = useInventoryContext()
   const {auth} = useAuth()
   const initialValues: AddInventoryItem = {
-    item_type: '',
+    item_type: 'Frames',
     store_sku: '',
     name: '',
     description: '',
@@ -35,7 +34,17 @@ const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
     description: Yup.string().required('Required'),
     qty: Yup.number().min(0, 'Must be greater than or equal to 0').required('Required'),
     sale_value: Yup.number().min(0, 'Must be greater than or equal to 0').required('Required'),
-    cost_value: Yup.number().min(0, 'Must be greater than or equal to 0').required('Required'),
+    cost_value: Yup.number()
+      .min(0, 'Must be greater than or equal to 0')
+      .required('Required')
+      .test(
+        'is-less-than-sale',
+        'Cost value should be less than or equal to sale value',
+        function (value) {
+          const {sale_value} = this.parent
+          return !value || !sale_value || value <= sale_value
+        }
+      ),
     brand: Yup.string().required('Required'),
   })
 
@@ -44,14 +53,13 @@ const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
       try {
         const response = await addInventory(auth?.token, values)
 
-        if (response.status == 201) {
-          toast.success('Inventory created successfully');
-          setShouldFetchInventory(true);
+        if (response.status === 201) {
+          toast.success('Inventory created successfully')
+          setShouldFetchInventory(true)
           // dispatch(setShouldFetchInventory(true));
           handleClose.handleClose()
-          
         } else {
-          toast.error("Unable to create Inventory")
+          toast.error('Unable to create Inventory')
           handleClose.handleClose()
         }
       } catch (error: any) {
@@ -71,9 +79,7 @@ const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
       >
         <Form>
           <div className='row'>
-            <p>strong</p>
             <div className='form-group col-md-6'>
-              <label htmlFor='item_type'>Item Type:</label>
               <Field as='select' name='item_type' className='form-control my-2'>
                 <option value=''>Select Item Type</option>
                 <option value='Frames'>Frames</option>
@@ -83,21 +89,33 @@ const AddInventory: React.FC<AddInventoryProps> = ( handleClose ) => {
               <ErrorMessage name='item_type' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-6'>
-              <label htmlFor='store_sku'>Store SKU:</label>
-              <Field type='text' name='store_sku' className='form-control my-2' />
+              <Field
+                type='text'
+                placeholder='Store SKU'
+                name='store_sku'
+                className='form-control my-2'
+              />
               <ErrorMessage name='store_sku' component='div' className='error-message' />
             </div>
           </div>
 
           <div className='row'>
             <div className='form-group col-md-6'>
-              <label htmlFor='name'>Name:</label>
-              <Field type='text' name='name' className='form-control my-2' />
+              <Field
+                type='text'
+                placeholder='Item Name'
+                name='name'
+                className='form-control my-2'
+              />
               <ErrorMessage name='name' component='div' className='error-message' />
             </div>
             <div className='form-group col-md-6'>
-              <label htmlFor='description'>Description:</label>
-              <Field type='text' name='description' className='form-control my-2' />
+              <Field
+                type='text'
+                placeholder='Description'
+                name='description'
+                className='form-control my-2'
+              />
               <ErrorMessage name='description' component='div' className='error-message' />
             </div>
           </div>

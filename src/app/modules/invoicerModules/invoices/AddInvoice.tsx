@@ -9,7 +9,7 @@ import {fetchSearchedCustomers, fetchSearchedInventory} from './_requests'
 import Swal from 'sweetalert2'
 import {toast} from 'react-toastify'
 import {useInventoryContext} from '../inventory/InventoryProvider'
-import {formatDate, PrescriptionTable} from '../utils'
+import {formatDate, PrescriptionTable, prescriptionCorrector} from '../utils'
 
 interface AddInvoiceProps {
   //   onSubmit: (formData: InvoiceModel) => void;
@@ -51,13 +51,25 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   }
 
   const handleQuantityChange = (itemId, change) => {
-    setItemQuantities((prevQuantities) => ({
-      ...prevQuantities,
-      [itemId]: Math.max(Number(prevQuantities[itemId] || 0) + change, 0),
-    }))
-  }
+    setItemQuantities((prevQuantities) => {
+      const newQuantity = (prevQuantities[itemId] || 0) + change
 
-  console.log('Selected Prescripton', selectedPrescription)
+      // If the new quantity is zero or less, remove the item from both lists
+      if (newQuantity <= 0) {
+        // Remove from selected inventory option
+        setSelectedInventoryOption((prevOptions) => {
+          return prevOptions.filter((option) => option.id !== itemId)
+        })
+        // Remove from item quantities
+        const updatedQuantities = {...prevQuantities}
+        delete updatedQuantities[itemId]
+        return updatedQuantities
+      } else {
+        // Update the quantity
+        return {...prevQuantities, [itemId]: newQuantity}
+      }
+    })
+  }
 
   const {auth} = useAuth()
   const initialValues: any = {
@@ -66,19 +78,19 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     first_name: '',
     last_name: '',
     gender: '',
-    left_sphere: 0,
-    right_sphere: 0,
-    left_cylinder: 0,
-    right_cylinder: 0,
-    left_axis: 0,
-    right_axis: 0,
-    left_prism: 0,
-    right_prism: 0,
-    left_add: 0,
-    right_add: 0,
-    left_ipd: 0,
-    right_ipd: 0,
-    pupillary_distance: 0,
+    left_sphere: null,
+    right_sphere: null,
+    left_cylinder: null,
+    right_cylinder: null,
+    left_axis: null,
+    right_axis: null,
+    left_prism: null,
+    right_prism: null,
+    left_add: null,
+    right_add: null,
+    left_ipd: null,
+    right_ipd: null,
+    pupillary_distance: null,
     additional_notes: '',
     inventory_items: [] as Array<{
       inventory_item: number
@@ -90,7 +102,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     discount: 0,
     advance: 0,
     advance_payment_mode: 'Cash',
-    tax_percentage: 0,
+    tax_percentage: 5,
+    is_taxable: true,
   }
 
   const validationSchema = Yup.object().shape({
@@ -141,27 +154,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     tax_percentage: Yup.string(),
   })
 
-  function formatDateToYYYYMMDD(date) {
-    if (!(date instanceof Date)) {
-      throw new Error('Invalid date object.')
-    }
-    console.log(date)
-
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-
-    console.log(`${year}-${month}-${day}`)
-
-    return `${year}-${month}-${day}`
-  }
-
   const handleSubmit = async (values) => {
     const inventoryItems = Object.entries(itemQuantities).map(([inventory_item, quantity]) => ({
       inventory_item: Number(inventory_item), // Convert the key to a number if needed
-      quantity: quantity || 0, // Use 0 if quantity is undefined
+      quantity: quantity || 1, // Use 0 if quantity is undefined
     }))
-    const dataTosend: any = {
+    const invoiceData: any = {
       customer: {
         phone: values.phone,
         email: values.email,
@@ -171,18 +169,18 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
         ...(values.id && {id: values.id}),
       },
       prescription: {
-        left_sphere: parseFloat(values.left_sphere), // 2.00
-        right_sphere: parseFloat(values.right_sphere), // 2.00
-        left_cylinder: parseFloat(values.left_cylinder), // 2.00
-        right_cylinder: parseFloat(values.right_cylinder), // 2.00
-        left_axis: parseFloat(values.left_axis),
-        right_axis: parseFloat(values.right_axis),
-        left_prism: parseFloat(values.left_prism), // 2.00
-        right_prism: parseFloat(values.right_prism), // 2.00
-        left_add: parseFloat(values.left_add), // 2.00
-        right_add: parseFloat(values.right_add), // 2.00
-        left_ipd: parseFloat(values.left_ipd), // 2.00
-        right_ipd: parseFloat(values.right_ipd), // 2.00
+        left_sphere: prescriptionCorrector(values.left_sphere),
+        right_sphere: prescriptionCorrector(values.right_sphere),
+        left_cylinder: prescriptionCorrector(values.left_cylinder),
+        right_cylinder: prescriptionCorrector(values.right_cylinder),
+        left_axis: prescriptionCorrector(values.left_axis),
+        right_axis: prescriptionCorrector(values.right_axis),
+        left_prism: prescriptionCorrector(values.left_prism),
+        right_prism: prescriptionCorrector(values.right_prism),
+        left_add: prescriptionCorrector(values.left_add),
+        right_add: prescriptionCorrector(values.right_add),
+        left_ipd: prescriptionCorrector(values.left_ipd),
+        right_ipd: prescriptionCorrector(values.right_ipd),
         pupillary_distance: +values.pupillary_distance,
         additional_notes: values.additional_notes,
         ...(values.prescriptionId && {id: values.prescriptionId}),
@@ -190,18 +188,17 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
       inventory_items: inventoryItems,
       date: values.date,
       remarks: values.remarks,
-      delivery_date: formatDateToYYYYMMDD(new Date(values.delivery_date)),
+      delivery_date: formatDate(new Date(values.delivery_date)),
       discount: values.discount,
       advance: values.advance,
       advance_payment_mode: values.advance_payment_mode,
+      is_taxable: values.is_taxable,
       tax_percentage: values.tax_percentage,
     }
 
-    console.log(dataTosend)
-
     if (auth?.token) {
       try {
-        const response = await addInvoiceService(auth?.token, dataTosend)
+        const response = await addInvoiceService(auth?.token, invoiceData)
         console.log(response)
         if (response.status === 201) {
           toast.success('Invoice Added Successfully')
@@ -230,7 +227,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           response.data.results.map((customer) => {
             const labelValue = selectCustomerBy === 'phone' ? customer.phone : customer.email
             return {
-              label: `${labelValue}`,
+              label: `${customer.first_name} ${customer.last_name} ${labelValue}`,
               value: customer,
             }
           })
@@ -252,12 +249,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           response.data &&
           response.data.results.map((inventory) => ({
             label: `${inventory.name}`,
-            value: inventory, // Adjust the property based on your customer model
+            availability: inventory.qty === 0 ? false : true,
+            value: inventory,
           }))
         return options
       }
     } catch (error: any) {
-      console.error('Error fetching customers:', error)
+      console.error('Error fetching Inventory:', error)
       toast.error(error.response.data.error)
       return [auth?.token, searchInventoryInput]
     }
@@ -271,7 +269,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     >
       {(formikProps) => (
         <Form>
-          <h4>Customer Details:</h4>
           <div className='row'>
             <div className='col-md-2'>
               <select
@@ -289,7 +286,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 <option value='email'>Email</option>
               </select>
             </div>
-            <div className='col-md-5'>
+            <div className='col-md-10'>
               <AsyncSelect
                 styles={{
                   option: (provided, state) => ({
@@ -301,9 +298,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 loadOptions={(inputValue) => loadOptions(inputValue)}
                 defaultOptions
                 onChange={(selectedOption: any | {}) => {
-                  // Handle the selected customer option
-                  console.log('Selected Customer:', selectedOption)
-
                   // Set form values based on the selected customer
                   formikProps.setValues({
                     ...formikProps.values,
@@ -456,7 +450,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               <ErrorMessage name='last_name' component='div' className='error-message' />
             </div>
           </div>
-          <h4>Prescriptions</h4>
+          <hr />
           {Object.keys(selectedOption).length !== 0 && selectedOption.prescriptions && (
             <div className='card-body py-3'>
               {/* begin::Table container */}
@@ -721,7 +715,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
             </div>
           </div>
 
-          <h4>Inventory Items</h4>
+          <hr />
           <div className='row'>
             <div className='col-md-2'>
               <select
@@ -732,7 +726,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 defaultValue={'name'}
                 name='selectInventoryBy'
                 onChange={(e) => {
-                  setSelectCustomerBy(e.target.value)
+                  setSelectInventoryBy(e.target.value)
                 }}
               >
                 <option value='name'>Name</option>
@@ -740,7 +734,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 <option value='type'>Type</option>
               </select>
             </div>
-            <div className='col-md-6 mt-3'>
+            <div className='col-md-10 mt-3'>
               <AsyncSelect
                 styles={{
                   option: (provided, state) => ({
@@ -753,7 +747,21 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 defaultOptions
                 onChange={(selectedOption: any | {}) => {
                   setSelectedInventoryOption((prev) => {
-                    return [...prev, selectedOption.value]
+                    // Add the selected inventory item if it's not already included
+                    const isAlreadySelected = prev.some(
+                      (item) => item.id === selectedOption.value.id
+                    )
+                    if (!isAlreadySelected) {
+                      return [...prev, selectedOption.value]
+                    }
+                    return prev
+                  })
+                  setItemQuantities((prevQuantities) => {
+                    // Set the quantity to 1 if this item is not already in the quantities object
+                    if (!prevQuantities[selectedOption.value.id]) {
+                      return {...prevQuantities, [selectedOption.value.id]: 1}
+                    }
+                    return prevQuantities
                   })
                 }}
                 onInputChange={(inputValue) => {
@@ -802,7 +810,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                                 >
                                   -
                                 </button>
-                                <span className='mx-2'>{itemQuantities[itemId] || 0}</span>
+                                <span className='mx-2'>{itemQuantities[itemId] || 1}</span>
                                 <button
                                   type='button'
                                   className='btn btn-light btn-sm'
@@ -813,12 +821,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                               </div>
                             </td>
                             <td>
-                              <a
-                                className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                              <button
+                                className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-danger btn-sm me-1'
                                 onClick={() => handleRemoveItem(itemId)}
                               >
                                 <KTIcon iconName='trash' className='fs-3' />
-                              </a>
+                              </button>
                             </td>
                           </tr>
                         )
@@ -853,7 +861,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
             </div>
           </div>
 
-          <div className='row'>
+          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+              Total
+            </h4>
+
             <div className='form-group col-md-4'>
               <Field
                 type='number'
@@ -863,6 +875,29 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='discount' component='div' className='error-message' />
             </div>
+          </div>
+
+          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+              Discount
+            </h4>
+
+            <div className='form-group col-md-4'>
+              <Field
+                type='number'
+                name='discount'
+                placeholder='Discount'
+                className='form-control my-2'
+              />
+              <ErrorMessage name='discount' component='div' className='error-message' />
+            </div>
+          </div>
+
+          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+              Advance
+            </h4>
+
             <div className='form-group col-md-4'>
               <Field
                 type='number'
@@ -872,6 +907,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='advance' component='div' className='error-message' />
             </div>
+          </div>
+
+          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+              Payment Mode
+            </h4>
             <div className='form-group col-md-4'>
               <Field
                 as='select'
@@ -886,8 +927,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 <option value='Others'>Others</option>
               </Field>
               <ErrorMessage name='advance_payment_mode' component='div' className='error-message' />
-              {/* <Field type='text' name='advance_payment_mode' className='form-control my-2' />
-              <ErrorMessage name='advance_payment_mode' component='div' className='error-message' /> */}
             </div>
           </div>
           <div className='row'>

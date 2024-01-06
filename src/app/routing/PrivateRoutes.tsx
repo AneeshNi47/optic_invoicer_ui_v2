@@ -2,15 +2,14 @@ import {FC, lazy, Suspense} from 'react'
 import {Navigate, Route, Routes} from 'react-router-dom'
 import {MasterLayout} from '../../_metronic/layout/MasterLayout'
 import TopBarProgress from 'react-topbar-progress-indicator'
-import {DashboardWrapper} from '../pages/dashboard/DashboardWrapper'
 import {MenuTestPage} from '../pages/MenuTestPage'
 import {getCSSVariableValue} from '../../_metronic/assets/ts/_utils'
 import {WithChildren} from '../../_metronic/helpers'
 import InvoicePage from '../modules/invoicerModules/InvoicerPageRoutes'
 import AdminPage from '../modules/adminModules/adminPageRoutes'
-import {Logout, AuthPage, useAuth} from '../modules/auth'
-import { InvoicerDashboardWrapper } from '../modules/invoicerModules/dashboard/InvoicerDashboard'
-import { AdminDashboardWrapper } from '../modules/adminModules/dashboard/AdminDashboard'
+import {useAuth} from '../modules/auth'
+import {InvoiceDashboardWrapper} from '../modules/invoicerModules/dashboard/InvoicerDashboard'
+import {AdminDashboardWrapper} from '../modules/adminModules/dashboard/AdminDashboard'
 
 const PrivateRoutes = () => {
   const ProfilePage = lazy(() => import('../modules/profile/ProfilePage'))
@@ -28,8 +27,12 @@ const PrivateRoutes = () => {
         {/* Redirect to Dashboard after success login/registartion */}
         <Route path='auth/*' element={<Navigate to='/dashboard' />} />
         {/* Pages */}
-        {currentUser?.user_type == "staff" ? <Route path='dashboard' element={<InvoicerDashboardWrapper />} /> : <Route path='dashboard' element={<AdminDashboardWrapper />} />}
-        
+        {currentUser?.user_type === 'staff' ? (
+          <Route path='dashboard' element={<InvoiceDashboardWrapper />} />
+        ) : (
+          <Route path='dashboard' element={<AdminDashboardWrapper />} />
+        )}
+
         <Route path='menu-test' element={<MenuTestPage />} />
         {/* Lazy Modules */}
         <Route
@@ -64,7 +67,7 @@ const PrivateRoutes = () => {
             </SuspensedView>
           }
         />
-         <Route
+        <Route
           path='/admin/*'
           element={
             <SuspensedView>

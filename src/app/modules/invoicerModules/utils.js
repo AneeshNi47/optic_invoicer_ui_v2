@@ -1,4 +1,27 @@
-import {Table} from 'react-bootstrap'
+import {generateInvoicePDF} from './invoices/_requests'
+import {toast} from 'react-toastify'
+
+export async function downloadInvoiceSlip(invoice, token) {
+  try {
+    const responseData = await generateInvoicePDF(token, invoice.id)
+    if (responseData.status === 200) {
+      const blob = new Blob([responseData.data], {type: 'application/pdf'})
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${invoice.invoice_number}_${invoice.customer.first_name}.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      toast.success('File saved successfully')
+    } else {
+      toast.error(responseData.data.error)
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error)
+    toast.error(error.response.data.error)
+  }
+}
+
 export function formatDate(dateString) {
   const date = new Date(dateString)
   const year = date.getFullYear()
@@ -9,6 +32,10 @@ export function formatDate(dateString) {
   const formattedMonth = month < 10 ? `0${month}` : month
   const formattedDay = day < 10 ? `0${day}` : day
   return `${year}-${formattedMonth}-${formattedDay}`
+}
+
+export function prescriptionCorrector(value) {
+  return value === 0.0 ? null : parseFloat(value)
 }
 
 export function PrescriptionTable({prescriptionData}) {
