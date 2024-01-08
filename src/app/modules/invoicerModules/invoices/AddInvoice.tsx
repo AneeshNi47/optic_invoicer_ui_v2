@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {Formik, Field, Form, ErrorMessage} from 'formik'
 import * as Yup from 'yup'
 import {useAuth} from '../../auth'
@@ -29,6 +29,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const [customerFieldDisable, setCustomerFieldDisable] = useState(false)
   const [selectCustomerBy, setSelectCustomerBy] = useState('phone')
   const [selectInventoryBy, setSelectInventoryBy] = useState('name')
+  const [is_taxable, setIs_taxable] = useState(false)
+  const [tax_percentage, setTaxPercentage] = useState(5)
   const [selectedPrescription, setSelectedPrescription] = useState(null)
 
   const [customerPrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
@@ -36,6 +38,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const [searchInventoryInput, setSearchInventoryInput] = useState('')
   const [selectedInventoryOption, setSelectedInventoryOption] = useState<any>([])
   const [itemQuantities, setItemQuantities] = useState({})
+  const [totalCost, setTotalCost] = useState(0)
 
   const {setShouldFetchInvoice} = useInventoryContext()
 
@@ -50,17 +53,41 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     })
   }
 
+  useEffect(() => {
+    setTotalCost(calculateTotal())
+  }, [selectedInventoryOption, itemQuantities, is_taxable])
+
+  const calculateTotal = () => {
+    // Calculate subtotal
+    let subtotal = selectedInventoryOption.reduce((total, item) => {
+      const itemTotal = item.sale_value * (itemQuantities[item.id] || 1)
+      return total + itemTotal
+    }, 0)
+
+    // Add tax if taxable
+    if (is_taxable) {
+      return subtotal + (subtotal * tax_percentage) / 100
+    } else {
+      return subtotal
+    }
+  }
+
+  const handleIsTaxableChange = (event, setFieldValue) => {
+    const isChecked = event.target.checked
+    setIs_taxable(isChecked) // Update local state
+
+    setFieldValue('is_taxable', isChecked) // Update Formik state
+  }
+
   const handleQuantityChange = (itemId, change) => {
     setItemQuantities((prevQuantities) => {
       const newQuantity = (prevQuantities[itemId] || 0) + change
 
-      // If the new quantity is zero or less, remove the item from both lists
       if (newQuantity <= 0) {
-        // Remove from selected inventory option
-        setSelectedInventoryOption((prevOptions) => {
-          return prevOptions.filter((option) => option.id !== itemId)
-        })
-        // Remove from item quantities
+        // Remove the item from both lists
+        setSelectedInventoryOption((prevOptions) =>
+          prevOptions.filter((option) => option.id !== itemId)
+        )
         const updatedQuantities = {...prevQuantities}
         delete updatedQuantities[itemId]
         return updatedQuantities
@@ -78,19 +105,19 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     first_name: '',
     last_name: '',
     gender: '',
-    left_sphere: null,
-    right_sphere: null,
-    left_cylinder: null,
-    right_cylinder: null,
-    left_axis: null,
-    right_axis: null,
-    left_prism: null,
-    right_prism: null,
-    left_add: null,
-    right_add: null,
-    left_ipd: null,
-    right_ipd: null,
-    pupillary_distance: null,
+    left_sphere: '',
+    right_sphere: '',
+    left_cylinder: '',
+    right_cylinder: '',
+    left_axis: '',
+    right_axis: '',
+    left_prism: '',
+    right_prism: '',
+    left_add: '',
+    right_add: '',
+    left_ipd: '',
+    right_ipd: '',
+    pupillary_distance: '',
     additional_notes: '',
     inventory_items: [] as Array<{
       inventory_item: number
@@ -102,8 +129,21 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     discount: 0,
     advance: 0,
     advance_payment_mode: 'Cash',
-    tax_percentage: 5,
-    is_taxable: true,
+    tax_percentage: tax_percentage,
+    is_taxable: is_taxable,
+  }
+
+  function numberOrNaNValidation(fieldName, min, max) {
+    return Yup.mixed().test(
+      `${fieldName} must be a number between ${min} and ${max} or NaN`,
+      (value) => {
+        if (value === '' || value === undefined) {
+          return true
+        }
+        const numValue = Number(value)
+        return isNaN(numValue) || (numValue >= min && numValue <= max)
+      }
+    )
   }
 
   const validationSchema = Yup.object().shape({
@@ -112,42 +152,22 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     first_name: Yup.string().required('First name is required'),
     last_name: Yup.string().required('Last name is required'),
     gender: Yup.string().required('Gender is required'),
-    left_sphere: Yup.number()
-      .min(-20, `Left Sphere must be greater than or equal to ${-20}`)
-      .max(20, `Left Sphere must be less than or equal to ${20}`),
-    right_sphere: Yup.number()
-      .min(-20, `Right Sphere must be greater than or equal to ${-20}`)
-      .max(20, `Right Sphere must be less than or equal to ${20}`),
-    left_cylinder: Yup.number()
-      .min(-10, `Left Cylinder must be greater than or equal to ${-10}`)
-      .max(10, `Left Cylinder must be less than or equal to ${10}`),
-    right_cylinder: Yup.number()
-      .min(-10, `Right Sphere must be greater than or equal to ${-10}`)
-      .max(10, `Right Sphere must be less than or equal to ${10}`),
-    left_axis: Yup.number()
-      .min(1, `Left Axis must be greater than or equal to ${1}`)
-      .max(181, `Left Axis must be less than or equal to ${181}`),
-    right_axis: Yup.number()
-      .min(1, `Right axis must be greater than or equal to ${1}`)
-      .max(181, `Right axis must be less than or equal to ${181}`),
-    left_prism: Yup.number()
-      .min(0, `Left Prism must be greater than or equal to ${0}`)
-      .max(10, `Left Prism must be less than or equal to ${10}`),
-    right_prism: Yup.number()
-      .min(0, `Right Prism must be greater than or equal to ${0}`)
-      .max(10, `Right Prism must be less than or equal to ${10}`),
-    left_add: Yup.number()
-      .min(0, `Left Add must be greater than or equal to ${0}`)
-      .max(4, `Left Add must be less than or equal to ${4}`),
-    right_add: Yup.number()
-      .min(0, `Right Add must be greater than or equal to ${0}`)
-      .max(4, `Right Add must be less than or equal to ${4}`),
-    left_ipd: Yup.number(),
-    right_ipd: Yup.number(),
-    pupillary_distance: Yup.number(),
+    left_sphere: numberOrNaNValidation('Left Sphere', -20, 20),
+    right_sphere: numberOrNaNValidation('Right Sphere', -20, 20),
+    left_cylinder: numberOrNaNValidation('Left Cylinder', -10, 10),
+    right_cylinder: numberOrNaNValidation('Right Cylinder', -10, 10),
+    left_axis: numberOrNaNValidation('Left Axis', 1, 181),
+    right_axis: numberOrNaNValidation('Right axis', 1, 181),
+    left_prism: numberOrNaNValidation('Left Prism', 0, 10),
+    right_prism: numberOrNaNValidation('Right Prism', 0, 10),
+    left_add: numberOrNaNValidation('Left Add', 0, 4),
+    right_add: numberOrNaNValidation('Right Add', 0, 4),
+    left_ipd: numberOrNaNValidation('Left IPD', 10, 100),
+    right_ipd: numberOrNaNValidation('Right IPD', 10, 100),
+    pupillary_distance: numberOrNaNValidation('Pupillary Distance', 10, 100),
     additional_notes: Yup.string(),
     remarks: Yup.string(),
-    delivery_date: Yup.string(),
+    delivery_date: Yup.string().required('Delivery Dater is required'),
     discount: Yup.string(),
     advance: Yup.string(),
     advance_payment_mode: Yup.string().required('Advance Payment mode is required'),
@@ -198,8 +218,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
     if (auth?.token) {
       try {
+        console.log('submittni')
         const response = await addInvoiceService(auth?.token, invoiceData)
-        console.log(response)
         if (response.status === 201) {
           toast.success('Invoice Added Successfully')
           setShouldFetchInvoice(true)
@@ -220,7 +240,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     try {
       if (auth?.token && inputValue) {
         const response = await fetchSearchedCustomers(auth.token, inputValue, selectCustomerBy)
-        console.log(response.data)
         const options =
           response &&
           response.data &&
@@ -274,7 +293,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               <select
                 className='form-select form-select-solid'
                 data-kt-select2='true'
-                data-placeholder='Select option'
+                data-placeholder='Search Customer..'
                 data-allow-clear='true'
                 defaultValue={'phone'}
                 onChange={(e) => {
@@ -294,6 +313,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                     color: 'black', // set the desired text color
                   }),
                 }}
+                placeholder='Search Customers..'
                 cacheOptions
                 loadOptions={(inputValue) => loadOptions(inputValue)}
                 defaultOptions
@@ -721,7 +741,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               <select
                 className='form-select form-select-solid'
                 data-kt-select2='true'
-                data-placeholder='Select option'
+                data-placeholder='Search Items'
                 data-allow-clear='true'
                 defaultValue={'name'}
                 name='selectInventoryBy'
@@ -743,6 +763,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                   }),
                 }}
                 cacheOptions
+                placeholder='Search Inventory..'
                 loadOptions={(inputValue) => loadOptionsInventory(inputValue)}
                 defaultOptions
                 onChange={(selectedOption: any | {}) => {
@@ -841,7 +862,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           )}
 
           <div className='row'>
-            <div className='form-group col-md-8'>
+            <div className='form-group col-md-12'>
               <Field
                 type='textArea'
                 name='remarks'
@@ -850,7 +871,25 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='remarks' component='div' className='error-message' />
             </div>
-            <div className='form-group col-md-4'>
+          </div>
+          <div className='form-check form-switch form-check-custom form-check-solid'>
+            <Field
+              name='is_taxable'
+              class='form-check-input'
+              type='checkbox'
+              checked={formikProps.values.is_taxable}
+              onChange={(e) => handleIsTaxableChange(e, formikProps.setFieldValue)}
+            />
+            <span className='toggle-slider'></span>
+            <label className='form-check-label'>Tax Invoice</label>
+          </div>
+
+          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-3'>
+              Date Of Delivery
+            </h4>
+
+            <div className='form-group col-md-3'>
               <Field
                 type='date'
                 name='delivery_date'
@@ -859,24 +898,23 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               />
               <ErrorMessage name='delivery_date' component='div' className='error-message' />
             </div>
-          </div>
 
-          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-3'>
               Total
             </h4>
 
-            <div className='form-group col-md-4'>
+            <div className='form-group col-md-3'>
               <Field
                 type='number'
                 name='discount'
                 placeholder='Discount'
                 className='form-control my-2'
+                disabled
+                value={totalCost.toFixed(2)}
               />
               <ErrorMessage name='discount' component='div' className='error-message' />
             </div>
           </div>
-
           <div className='row' style={{display: 'flex', alignItems: 'center'}}>
             <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
               Discount
@@ -927,13 +965,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 <option value='Others'>Others</option>
               </Field>
               <ErrorMessage name='advance_payment_mode' component='div' className='error-message' />
-            </div>
-          </div>
-          <div className='row'>
-            <div className='form-group col-md-4'>
-              <label htmlFor='tax_percentage'>Tax Percentage:</label>
-              <Field type='number' name='tax_percentage' className='form-control my-2' />
-              <ErrorMessage name='tax_percentage' component='div' className='error-message' />
             </div>
           </div>
           <div className='row mt-5'>

@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useEffect, useState, useRef} from 'react'
 import {KTIcon} from '../../../../_metronic/helpers'
+import {Button} from 'react-bootstrap'
 import {useAuth} from '../../auth'
 import {getInvoices} from './_requests'
 import {InvoiceModel} from './_models'
@@ -267,19 +268,19 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       <span className='badge badge-light-success'>{invoice.status}</span>
                     </td>
                     <td className='text-end'>
-                      <a className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'>
+                      <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'>
                         <KTIcon iconName='pencil' className='fs-3' />
-                      </a>
-                      <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                      </button>
+                      <button
+                        className='btn btn-icon btn-bg-light btn-color-warning btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           handleOpenModal(invoice)
                         }}
                       >
                         <KTIcon iconName='eye' className='fs-3' />
-                      </a>
+                      </button>
                       <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                        className='btn btn-icon btn-bg-light btn-color-success btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           handlePaymentOpenModal(invoice)
                         }}
@@ -287,7 +288,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                         <KTIcon iconName='dollar' className='fs-3' />
                       </a>
                       <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                        className='btn btn-icon btn-bg-light btn-color-dark  btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           fileDownload(invoice)
                         }}
