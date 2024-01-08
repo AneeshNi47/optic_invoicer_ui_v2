@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react'
+import {useEffect} from 'react'
 import {useIntl} from 'react-intl'
 import {PageLink, PageTitle} from '../../../_metronic/layout/core'
 import {
@@ -13,7 +13,6 @@ import {
   TablesWidget5,
   TablesWidget9,
 } from '../../../_metronic/partials/widgets'
-import {SelectLocationModal} from '../../../_metronic/partials'
 
 const dashboardBreadCrumbs: Array<PageLink> = [
   {

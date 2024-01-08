@@ -43,7 +43,6 @@ const InvoiceDetailsModal: React.FC<Props> = ({
       <Modal.Header closeButton>
         <Modal.Title className='d-flex'>
           <KTIcon iconName='notepad' className='fs-1 text-primary text-lg-start symbol-50px px-1' />{' '}
-          Invoice Details:{' '}
           <h2 className='text-primary'>{modalContent && modalContent.invoice_number}</h2>
         </Modal.Title>
       </Modal.Header>

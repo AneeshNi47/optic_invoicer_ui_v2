@@ -1,15 +1,16 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useEffect, useState, useRef} from 'react'
 import {KTIcon} from '../../../../_metronic/helpers'
+import {Button} from 'react-bootstrap'
 import {useAuth} from '../../auth'
-import {getInvoices, generateInvoicePDF} from './_requests'
+import {getInvoices} from './_requests'
 import {InvoiceModel} from './_models'
 import {InvoiceDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
 import {IndividualInvoice} from './_models'
 import {InvoicePaymentModal} from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
 import {toast} from 'react-toastify'
 import {useInventoryContext} from '../inventory/InventoryProvider'
-import {formatDate} from '../utils'
+import {formatDate, downloadInvoiceSlip} from '../utils'
 
 type Props = {
   className: string
@@ -63,28 +64,10 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     }
   }
 
-  const fileDownload = async (values) => {
+  const fileDownload = async (invoice) => {
     if (auth?.token) {
       setLoading(true)
-      try {
-        const responseData = await generateInvoicePDF(auth.token, values)
-
-        if (responseData.status === 200) {
-          const blob = new Blob([responseData.data], {type: 'application/pdf'})
-          const url = window.URL.createObjectURL(blob)
-          const link = document.createElement('a')
-          link.href = url
-          link.setAttribute('download', `${values}.pdf`)
-          document.body.appendChild(link)
-          link.click()
-          toast.success('File saved successfully')
-        } else {
-          toast.error(responseData.data.error)
-        }
-      } catch (error: any) {
-        console.error('Error fetching data:', error)
-        toast.error(error.response.data.error)
-      }
+      downloadInvoiceSlip(invoice, auth.token)
       setLoading(false)
     }
   }
@@ -275,24 +258,29 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                         Code: Paid
                       </span> 
                     </td> */}
-                    <td className='text-dark fw-bold text-hover-primary fs-6'>{invoice.total}</td>
+                    <td className='text-dark fw-bold text-hover-primary fs-6'>
+                      {invoice.total}
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        Balance: {invoice.balance}
+                      </span>{' '}
+                    </td>
                     <td>
                       <span className='badge badge-light-success'>{invoice.status}</span>
                     </td>
                     <td className='text-end'>
-                      <a className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'>
+                      <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'>
                         <KTIcon iconName='pencil' className='fs-3' />
-                      </a>
-                      <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                      </button>
+                      <button
+                        className='btn btn-icon btn-bg-light btn-color-warning btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           handleOpenModal(invoice)
                         }}
                       >
                         <KTIcon iconName='eye' className='fs-3' />
-                      </a>
+                      </button>
                       <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                        className='btn btn-icon btn-bg-light btn-color-success btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           handlePaymentOpenModal(invoice)
                         }}
@@ -300,9 +288,9 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                         <KTIcon iconName='dollar' className='fs-3' />
                       </a>
                       <a
-                        className='btn btn-icon btn-bg-light btn-active-color-primary btn-sm me-1'
+                        className='btn btn-icon btn-bg-light btn-color-dark  btn-active-color-primary btn-sm me-1'
                         onClick={() => {
-                          fileDownload(invoice.id)
+                          fileDownload(invoice)
                         }}
                       >
                         <KTIcon iconName='file-down' className='fs-3' />
