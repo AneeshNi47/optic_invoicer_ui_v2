@@ -1,11 +1,10 @@
 import React, {useState, useEffect} from 'react'
 import {Modal, Button} from 'react-bootstrap'
-import {KTIcon} from '../../../helpers';
-import { AddInventoryItem } from '../../../../app/modules/invoicerModules/inventory/_models';
-import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory';
-import AddInvoice from '../../../../app/modules/invoicerModules/invoices/AddInvoice';
-import AddOrganizations from '../../../../app/modules/adminModules/organizations/AddOrganization';
-
+import {KTIcon} from '../../../helpers'
+import {AddInventoryItem} from '../../../../app/modules/invoicerModules/inventory/_models'
+import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory'
+import AddInvoice from '../../../../app/modules/invoicerModules/invoices/AddInvoice'
+import AddOrganizations from '../../../../app/modules/adminModules/organizations/AddOrganization'
 
 // Add any additional types you need
 type Props = {
@@ -15,23 +14,21 @@ type Props = {
   // Add additional props as required
 }
 
-const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName  /*, other props */}) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(false);
-  let title: string = "";
-  let componentToRender: JSX.Element = <></>;
-  
-  if(modalName == "inventory" ) {
-    title="Add Inventory";
-    componentToRender =<AddInventory handleClose={handleClose}/>
-  } else if (modalName == "invoice") {
-    title="Add Invoice";
-    componentToRender = <AddInvoice handleClose={handleClose}/>
-  } else if(modalName == "admin") {
-    title= "Add Organization"
-    componentToRender= <AddOrganizations handleClose={handleClose}/>
-  }
+const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName /*, other props */}) => {
+  const [selectedCustomer, setSelectedCustomer] = useState(false)
+  let title: string = ''
+  let componentToRender: JSX.Element = <></>
 
-  
+  if (modalName === 'inventory') {
+    title = 'Add Inventory'
+    componentToRender = <AddInventory handleClose={handleClose} />
+  } else if (modalName === 'invoice') {
+    title = 'Add Invoice'
+    componentToRender = <AddInvoice handleClose={handleClose} />
+  } else if (modalName === 'admin') {
+    title = 'Add Organization'
+    componentToRender = <AddOrganizations handleClose={handleClose} />
+  }
 
   return (
     <Modal
@@ -49,17 +46,7 @@ const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName  /*, 
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-      {componentToRender}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant='secondary' onClick={handleClose}>
-          Close
-        </Button>
-        {/* <Button variant='primary' onClick={handleAddItem}>
-          Save Changes
-        </Button> */}
-      </Modal.Footer>
+      <Modal.Body>{componentToRender}</Modal.Body>
     </Modal>
   )
 }
