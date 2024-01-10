@@ -54,17 +54,17 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   }
 
   useEffect(() => {
-    setTotalCost(calculateTotal())
-  }, [selectedInventoryOption, itemQuantities, is_taxable])
+    const total = calculateTotal()
+    setTotalCost(total)
+  }, [selectedInventoryOption, itemQuantities, is_taxable, tax_percentage])
 
+  // Original calculateTotal function
   const calculateTotal = () => {
-    // Calculate subtotal
     let subtotal = selectedInventoryOption.reduce((total, item) => {
       const itemTotal = item.sale_value * (itemQuantities[item.id] || 1)
       return total + itemTotal
     }, 0)
 
-    // Add tax if taxable
     if (is_taxable) {
       return subtotal + (subtotal * tax_percentage) / 100
     } else {
@@ -72,10 +72,22 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     }
   }
 
+  // New function to calculate total with discount
+  const calculateTotalWithDiscount = (discount) => {
+    const subtotal = calculateTotal() // Use original calculateTotal for subtotal
+    const discountedTotal = subtotal - (discount || 0)
+
+    // Apply tax if taxable
+    if (is_taxable) {
+      return discountedTotal + (discountedTotal * tax_percentage) / 100
+    } else {
+      return discountedTotal
+    }
+  }
+
   const handleIsTaxableChange = (event, setFieldValue) => {
     const isChecked = event.target.checked
     setIs_taxable(isChecked) // Update local state
-
     setFieldValue('is_taxable', isChecked) // Update Formik state
   }
 
@@ -168,8 +180,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     additional_notes: Yup.string(),
     remarks: Yup.string(),
     delivery_date: Yup.string().required('Delivery Dater is required'),
-    discount: Yup.string(),
-    advance: Yup.string(),
+    discount: Yup.number().max(totalCost, 'Discount cannot exceed total cost'),
+    advance: Yup.number().max(totalCost, 'Advance cannot exceed total cost'),
     advance_payment_mode: Yup.string().required('Advance Payment mode is required'),
     tax_percentage: Yup.string(),
   })
@@ -300,7 +312,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                   setSelectCustomerBy(e.target.value)
                 }}
               >
-                <option></option>
                 <option value='phone'>Phone</option>
                 <option value='email'>Email</option>
               </select>
@@ -900,7 +911,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
             </div>
 
             <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-3'>
-              Total
+              Discount
             </h4>
 
             <div className='form-group col-md-3'>
@@ -909,23 +920,29 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 name='discount'
                 placeholder='Discount'
                 className='form-control my-2'
-                disabled
-                value={totalCost.toFixed(2)}
+                onChange={(e) => {
+                  const discountValue = parseFloat(e.target.value) || 0
+                  formikProps.setFieldValue('discount', discountValue)
+                  const totalWithDiscount = calculateTotalWithDiscount(discountValue)
+                  setTotalCost(totalWithDiscount)
+                }}
               />
-              <ErrorMessage name='discount' component='div' className='error-message' />
             </div>
           </div>
+
           <div className='row' style={{display: 'flex', alignItems: 'center'}}>
             <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
-              Discount
+              Total
             </h4>
 
             <div className='form-group col-md-4'>
               <Field
                 type='number'
-                name='discount'
-                placeholder='Discount'
+                name='total'
+                placeholder='Total'
                 className='form-control my-2'
+                disabled
+                value={totalCost.toFixed(2)}
               />
               <ErrorMessage name='discount' component='div' className='error-message' />
             </div>
@@ -967,7 +984,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
               <ErrorMessage name='advance_payment_mode' component='div' className='error-message' />
             </div>
           </div>
-          <div className='row mt-5'>
+          <div className='row mt-12'>
             <div className='form-group col-md-12 d-flex justify-content-center'>
               <button type='submit' className='btn btn-primary'>
                 Submit

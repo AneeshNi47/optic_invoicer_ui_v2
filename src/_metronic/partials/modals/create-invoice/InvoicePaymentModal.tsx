@@ -33,7 +33,31 @@ const InvoicePaymentModal: React.FC<Props> = ({
       .min(1, `Amount must be greater than or equal to ${1}`)
       .max(modalContent.balance, `Amount must be less than or equal to ${modalContent.balance}`),
   })
-
+  const completePayment = async (values) => {
+    const paymentDetails: any = {
+      invoice_number: modalContent.invoice_number,
+      invoice: modalContent.id,
+      amount: modalContent.balance,
+      payment_mode: values.payment_mode,
+      payment_type: values.payment_type,
+    }
+    if (auth?.token) {
+      try {
+        const response = await invoicePayment(auth?.token, paymentDetails)
+        if (response.status === 201) {
+          toast.success('Payment completed')
+          handleClose()
+        } else {
+          toast.error(response.data.error)
+          handleClose()
+        }
+      } catch (error: any) {
+        console.log(error)
+        toast.error(error.response.data.error)
+        handleClose()
+      }
+    }
+  }
   const handleSubmit = async (values) => {
     const paymentDetails: any = {
       invoice_number: modalContent.invoice_number,
@@ -87,19 +111,22 @@ const InvoicePaymentModal: React.FC<Props> = ({
         >
           {(formikProps) => (
             <Form>
-              <div className='form-group col-md-6'>
-                <label htmlFor='payment_mode'>Payment Mode:</label>
-                <Field as='select' name='payment_mode' className='form-control my-2'>
-                  <option value=''>Select</option>
-                  <option value='Cash'>Cash</option>
-                  <option value='Card'>Card</option>
-                  <option value='Online'>Online</option>
-                  <option value='Others'>Others</option>
-                </Field>
-                <ErrorMessage name='payment_mode' component='div' className='error-message' />
-              </div>
+              <div className='row'>
+                {/* Left Column */}
+                <div className='col-md-5'>
+                  <div className='form-group'>
+                    <Field as='select' name='payment_mode' className='form-control my-2'>
+                      <option value=''>Select</option>
+                      <option value='Cash'>Cash</option>
+                      <option value='Card'>Card</option>
+                      <option value='Online'>Online</option>
+                      <option value='Others'>Others</option>
+                    </Field>
+                    <ErrorMessage name='payment_mode' component='div' className='error-message' />
+                  </div>
 
-              <div className='form-group col-md-6'>
+                  {/* Uncomment and include this section if needed
+              <div className='form-group'>
                 <label htmlFor='payment_type'>Payment Type:</label>
                 <Field as='select' name='payment_type' className='form-control my-2'>
                   <option value=''>Select</option>
@@ -110,17 +137,34 @@ const InvoicePaymentModal: React.FC<Props> = ({
                 </Field>
                 <ErrorMessage name='payment_type' component='div' className='error-message' />
               </div>
+              */}
 
-              <div className='form-group col-md-6'>
-                <label htmlFor='amount'>Amount:</label>
-                <Field type='number' name='amount' className='form-control my-2' />
-                <ErrorMessage name='amount' component='div' className='error-message' />
-              </div>
-
-              <div className='row mt-5'>
-                <div className='form-group col-md-12 d-flex justify-content-center'>
-                  <button type='submit' className='btn btn-primary'>
-                    Submit
+                  <div className='form-group'>
+                    <Field type='number' name='amount' className='form-control my-2' />
+                    <ErrorMessage name='amount' component='div' className='error-message' />
+                  </div>
+                  <div style={{textAlign: 'center', marginTop: '20px'}}>
+                    <button type='submit' className='btn btn-primary text-center'>
+                      Submit
+                    </button>
+                  </div>
+                </div>{' '}
+                {/* Vertical Divider */}
+                <div className='col-md-1 d-none d-md-block'>
+                  <div
+                    style={{
+                      borderLeft: '1px solid #dee2e6',
+                      height: '100%',
+                      position: 'absolute',
+                      left: '50%',
+                      top: 0,
+                    }}
+                  />
+                </div>
+                {/* Right Column */}
+                <div className='col-md-5 d-flex align-items-center justify-content-center'>
+                  <button className='btn btn-success' onClick={completePayment}>
+                    Complete Payment {modalContent.balance}
                   </button>
                 </div>
               </div>
@@ -128,14 +172,6 @@ const InvoicePaymentModal: React.FC<Props> = ({
           )}
         </Formik>
       </Modal.Body>
-      <Modal.Footer>
-        <Button variant='secondary' onClick={handleClose}>
-          Close
-        </Button>
-        {/* <Button variant='primary' onClick={handleAddItem}>
-          Save Changes
-        </Button> */}
-      </Modal.Footer>
     </Modal>
   )
 }

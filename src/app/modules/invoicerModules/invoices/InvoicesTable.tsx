@@ -214,9 +214,9 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                     />
                   </div>
                 </th>
-                <th className='min-w-150px'>Order Id</th>
+                <th className='min-w-150px'>Customer</th>
+                <th className='min-w-120px'>Invoice No.</th>
                 <th className='min-w-120px'>Total</th>
-                <th className='min-w-120px'>Status</th>
                 <th className='min-w-100px text-end'>Actions</th>
               </tr>
             </thead>
@@ -241,10 +241,34 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                           handleOpenModal(invoice)
                         }}
                       >
-                        {invoice.invoice_number}
+                        {invoice.customer.first_name}
                       </a>
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
                         {formatDate(invoice.created_on)}
+                      </span>
+                    </td>
+                    <td>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary fs-6'
+                        onClick={() => {
+                          handleOpenModal(invoice)
+                        }}
+                      >
+                        {invoice.invoice_number}
+                      </a>
+                      <span className='text-muted fw-semibold text-muted d-block fs-7'>
+                        <span
+                          className={
+                            invoice.status === 'Created'
+                              ? 'badge badge-light-success'
+                              : invoice.status === 'Paid'
+                              ? 'badge badge-light-primary'
+                              : 'badge badge-light-danger'
+                          }
+                        >
+                          {invoice.status}
+                        </span>
                       </span>
                     </td>
                     {/* <td>
@@ -263,9 +287,6 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
                         Balance: {invoice.balance}
                       </span>{' '}
-                    </td>
-                    <td>
-                      <span className='badge badge-light-success'>{invoice.status}</span>
                     </td>
                     <td className='text-end'>
                       <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'>
