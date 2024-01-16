@@ -7,6 +7,7 @@ import {getOrganisations} from './requests'
 import {InvoicerDashboardModel} from './_models'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {toast} from 'react-toastify'
+import {getMonthByNumbers, processStatistics} from '../utils'
 
 const dashboardBreadCrumbs: Array<PageLink> = [
   {
@@ -19,7 +20,14 @@ const dashboardBreadCrumbs: Array<PageLink> = [
 
 const DashboardPage = () => {
   const {auth} = useAuth()
-  const [organisationItems, setOrganisationItems] = useState<InvoicerDashboardModel | any>({})
+  const [organizationItems, setOrganisationItems] = useState<InvoicerDashboardModel | any>({})
+  const [invoiceDataValues, setInvoiceDataValues] = useState([])
+  const [invoiceDataKeys, setInvoiceDataKeys] = useState([])
+  const [inventoryDataValues, setInventoryDataValues] = useState([])
+  const [inventoryDataKeys, setInventoryDataKeys] = useState([])
+  const [customerDataValues, setCustomerDataValues] = useState([])
+  const [customerDataKeys, setCustomerDataKeys] = useState([])
+
   const [loading, setLoading] = useState(false)
   const [iconClickCount, setIconClickCount] = useState(0)
 
@@ -58,6 +66,28 @@ const DashboardPage = () => {
     setIconClickCount((prevCount) => prevCount + 1)
   }
 
+  useEffect(() => {
+    const processedInvoiceStats = processStatistics(
+      organizationItems.invoice_statistics,
+      getMonthByNumbers
+    )
+    setInvoiceDataValues(processedInvoiceStats.dataValues)
+    setInvoiceDataKeys(processedInvoiceStats.dataKeys)
+
+    const processedInventoryStats = processStatistics(
+      organizationItems.inventory_statistics,
+      getMonthByNumbers
+    )
+    setInventoryDataValues(processedInventoryStats.dataValues)
+    setInventoryDataKeys(processedInventoryStats.dataKeys)
+    const processedCustomerStats = processStatistics(
+      organizationItems.customer_statistics,
+      getMonthByNumbers
+    )
+    setCustomerDataValues(processedCustomerStats.dataValues)
+    setCustomerDataKeys(processedCustomerStats.dataKeys)
+  }, [organizationItems])
+
   return (
     <>
       {/* begin::Row */}
@@ -70,58 +100,65 @@ const DashboardPage = () => {
         </button>
         {/* <span onClick={handleIconClick}><KTIcon iconName='arrows-circle' className='fs-1 text-primary text-lg-start symbol-50px' /></span> */}
       </div>
-
-      <div className='row gy-5 g-xl-8'>
-        {/* begin::Col */}
-        <div
-          className='col-xxl-4'
-          onClick={() => {
-            window.location.href = '/organization/invoices'
-          }}
-        >
-          <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-5 mb-xl-4'
-            svgIcon='element-11'
-            color='danger'
-            description='Invoices'
-            change={`${
-              organisationItems.total_invoices ? organisationItems.total_invoices : '...'
-            }`}
-          />
+      {organizationItems.invoice_statistics && (
+        <div className='row gy-5 g-xl-8'>
+          {/* begin::Col */}
+          <div
+            className='col-xxl-4'
+            onClick={() => {
+              window.location.href = '/organization/invoices'
+            }}
+          >
+            <StatisticsWidget4
+              className='card-xxl-stretch-50 mb-5 mb-xl-4'
+              svgIcon='element-11'
+              color='danger'
+              description='Invoices'
+              data_values={invoiceDataValues}
+              data_keys={invoiceDataKeys}
+              change={`${
+                organizationItems.total_invoices ? organizationItems.total_invoices : '...'
+              }`}
+            />
+          </div>
+          <div
+            className='col-xxl-4'
+            onClick={() => {
+              window.location.href = '/organization/inventory'
+            }}
+          >
+            <StatisticsWidget4
+              className='card-xxl-stretch-50 mb-xl-4'
+              svgIcon='basket'
+              color='success'
+              description='Inventory'
+              data_values={inventoryDataValues}
+              data_keys={inventoryDataKeys}
+              change={`${
+                organizationItems.total_inventory ? organizationItems.total_inventory : '...'
+              }`}
+            />
+          </div>
+          <div
+            className='col-xxl-4'
+            onClick={() => {
+              window.location.href = '/organization/customers'
+            }}
+          >
+            <StatisticsWidget4
+              className='card-xxl-stretch-50 mb-5 mb-xl-4'
+              svgIcon='element-11'
+              color='primary'
+              description='Customers'
+              data_values={customerDataValues}
+              data_keys={customerDataKeys}
+              change={`${
+                organizationItems.total_customers ? organizationItems.total_customers : '...'
+              }`}
+            />
+          </div>
         </div>
-        <div
-          className='col-xxl-4'
-          onClick={() => {
-            window.location.href = '/organization/inventory'
-          }}
-        >
-          <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-xl-4'
-            svgIcon='basket'
-            color='success'
-            description='Inventory'
-            change={`${
-              organisationItems.total_inventory ? organisationItems.total_inventory : '...'
-            }`}
-          />
-        </div>
-        <div
-          className='col-xxl-4'
-          onClick={() => {
-            window.location.href = '/organization/customers'
-          }}
-        >
-          <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-5 mb-xl-4'
-            svgIcon='element-11'
-            color='primary'
-            description='Customers'
-            change={`${
-              organisationItems.total_customers ? organisationItems.total_customers : '...'
-            }`}
-          />
-        </div>
-      </div>
+      )}
       {/* end::Row */}
     </>
   )

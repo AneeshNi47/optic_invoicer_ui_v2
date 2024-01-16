@@ -12,9 +12,19 @@ type Props = {
   color: string
   change: string
   description: string
+  data_values: any[]
+  data_keys: any[]
 }
 
-const StatisticsWidget4: React.FC<Props> = ({className, svgIcon, color, change, description}) => {
+const StatisticsWidget4: React.FC<Props> = ({
+  className,
+  svgIcon,
+  color,
+  change,
+  description,
+  data_values,
+  data_keys,
+}) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
   const {mode} = useThemeMode()
   const refreshChart = () => {
@@ -29,7 +39,7 @@ const StatisticsWidget4: React.FC<Props> = ({className, svgIcon, color, change, 
 
     const chart = new ApexCharts(
       chartRef.current,
-      getChartOptions(height, labelColor, baseColor, lightColor)
+      getChartOptions(height, labelColor, baseColor, lightColor, data_values, data_keys)
     )
     if (chart) {
       chart.render()
@@ -46,8 +56,7 @@ const StatisticsWidget4: React.FC<Props> = ({className, svgIcon, color, change, 
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chartRef, color, mode])
-
+  }, [chartRef, color, mode, data_keys, data_values])
   return (
     <div className={`card ${className}`}>
       {/* begin::Body */}
@@ -83,13 +92,15 @@ function getChartOptions(
   height: number,
   labelColor: string,
   baseColor: string,
-  lightColor: string
+  lightColor: string,
+  data_values: any[],
+  data_keys: any[]
 ): ApexOptions {
   return {
     series: [
       {
         name: 'Net Profit',
-        data: [40, 40, 30, 30, 35, 35, 50],
+        data: data_values,
       },
     ],
     chart: {
@@ -124,7 +135,7 @@ function getChartOptions(
       colors: [baseColor],
     },
     xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+      categories: data_keys,
       axisBorder: {
         show: false,
       },
@@ -153,7 +164,7 @@ function getChartOptions(
     },
     yaxis: {
       min: 0,
-      max: 60,
+      max: Math.max(...data_values) + 100,
       labels: {
         show: false,
         style: {

@@ -1,6 +1,35 @@
 import {generateInvoicePDF} from './invoices/_requests'
 import {toast} from 'react-toastify'
 
+export function getMonthByNumbers(monthNumber) {
+  const monthNames = {
+    1: 'Jan',
+    2: 'Feb',
+    3: 'Mar',
+    4: 'Apr',
+    5: 'May',
+    6: 'Jun',
+    7: 'Jul',
+    8: 'Aug',
+    9: 'Sep',
+    10: 'Oct',
+    11: 'Nov',
+    12: 'Dec',
+  }
+  return monthNames[monthNumber]
+}
+
+export function processStatistics(statistics, getMonthByNumbers) {
+  if (!statistics) {
+    return {dataValues: [], dataKeys: []}
+  }
+
+  const dataValues = statistics.map((item) => item.value)
+  const dataKeys = statistics.map((item) => `${item.year},${getMonthByNumbers(item.month)}`)
+
+  return {dataValues, dataKeys}
+}
+
 export async function downloadInvoiceSlip(invoice, token) {
   try {
     const responseData = await generateInvoicePDF(token, invoice.id)

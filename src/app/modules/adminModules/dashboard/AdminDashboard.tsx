@@ -1,8 +1,6 @@
-import {useEffect, useState} from 'react'
+import {useEffect} from 'react'
 import {useIntl} from 'react-intl'
 import {PageLink, PageTitle} from '../../../../_metronic/layout/core'
-import {StatisticsWidget4} from '../../../../_metronic/partials/widgets'
-import {SelectLocationModal} from '../../../../_metronic/partials'
 
 const dashboardBreadCrumbs: Array<PageLink> = [
   {
@@ -25,18 +23,7 @@ const DashboardPage = () => {
   return (
     <>
       {/* begin::Row */}
-      <div className='row gy-5 g-xl-8'>
-        {/* begin::Col */}
-        <div className='col-xxl-4'>
-          <StatisticsWidget4
-            className='card-xxl-stretch-50 mb-5 mb-xl-4'
-            svgIcon='element-11'
-            color='danger'
-            description='Organisations'
-            change='750$'
-          />
-        </div>
-      </div>
+      <div className='row gy-5 g-xl-8'>{/* begin::Col */}</div>
       {/* end::Row */}
     </>
   )

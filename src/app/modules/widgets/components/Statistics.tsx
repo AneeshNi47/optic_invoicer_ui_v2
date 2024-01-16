@@ -3,7 +3,6 @@ import {
   StatisticsWidget1,
   StatisticsWidget2,
   StatisticsWidget3,
-  StatisticsWidget4,
   StatisticsWidget5,
   StatisticsWidget6,
 } from '../../../../_metronic/partials/widgets'
@@ -105,40 +104,6 @@ const Statistics: FC = () => {
             title='Sales Progress'
             description='Marketplace Sales Chart'
             change='+180'
-          />
-        </div>
-      </div>
-      {/* end::Row */}
-
-      {/* begin::Row */}
-      <div className='row g-5 g-xl-8'>
-        <div className='col-xl-4'>
-          <StatisticsWidget4
-            className='card-xl-stretch mb-xl-8'
-            svgIcon='basket'
-            color='info'
-            description='Sales Change'
-            change='+256'
-          />
-        </div>
-
-        <div className='col-xl-4'>
-          <StatisticsWidget4
-            className='card-xl-stretch mb-xl-8'
-            svgIcon='element-11'
-            color='success'
-            description='Weekly Income'
-            change='750$'
-          />
-        </div>
-
-        <div className='col-xl-4'>
-          <StatisticsWidget4
-            className='card-xl-stretch mb-5 mb-xl-8'
-            svgIcon='briefcase'
-            color='primary'
-            description='New Users'
-            change='+6.6K'
           />
         </div>
       </div>

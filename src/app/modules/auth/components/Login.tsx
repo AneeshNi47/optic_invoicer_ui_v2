@@ -20,8 +20,8 @@ const loginSchema = Yup.object().shape({
 })
 
 const initialValues = {
-  username: 'test_org1_user1',
-  password: 'qwerty654',
+  username: '',
+  password: '',
 }
 
 export function Login() {
@@ -39,14 +39,14 @@ export function Login() {
         const {data: user} = await getUserByToken(auth.token)
         console.log(user)
         setCurrentUser(user)
-        toast.success("logged in successfully")
+        toast.success('logged in successfully')
       } catch (error) {
         console.error(error)
         saveAuth(undefined)
         setStatus('The login details are incorrect')
         setSubmitting(false)
         setLoading(false)
-        toast.error("Invalid Credentials")
+        toast.error('Invalid Credentials')
       }
     },
   })
