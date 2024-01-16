@@ -1,44 +1,94 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import ApexCharts, {ApexOptions} from 'apexcharts'
-import {KTIcon} from '../../../helpers'
-import {Dropdown1} from '../../content/dropdown/Dropdown1'
-import {getCSS, getCSSVariableValue} from '../../../assets/ts/_utils'
-import {useThemeMode} from '../../layout/theme-mode/ThemeModeProvider'
-import {ReportData} from '../../../../app/modules/invoicerModules/reports/_models'
+import {KTIcon} from '../../../../_metronic/helpers'
+import {Dropdown1} from './Dropdown1'
+import {getCSS, getCSSVariableValue} from '../../../../_metronic/assets/ts/_utils'
+import {useThemeMode} from '../../../../_metronic/partials'
+import {toast} from 'react-toastify'
+import {getMonthByNumbers} from '../utils'
+import {getOrganizationReport} from './_requests'
+import {useAuth} from '../../auth'
 
 type Props = {
   className: string
-  data: ReportData
 }
 
-const ChartsWidget1: React.FC<Props> = ({className, data}) => {
+const CombinedChart: React.FC<Props> = ({className}) => {
+  const {auth} = useAuth()
   const chartRef = useRef<HTMLDivElement | null>(null)
   const {mode} = useThemeMode()
+  const [start_date, setStartDate] = useState('')
+  const [end_date, setEndDate] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [chartData, setChartData] = useState({})
+  const [date_request_string, setDateRequestString] = useState('')
+
+  const fetchOrganizationReport = async () => {
+    if (auth?.token) {
+      setLoading(true)
+      try {
+        const responseData = await getOrganizationReport(
+          auth.token,
+          start_date,
+          end_date,
+          date_request_string
+        )
+        setChartData(responseData.data)
+      } catch (error: any) {
+        toast.error(error.response.data.error)
+        console.error('Error fetching data:', error)
+      }
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchOrganizationReport()
+  }, [])
+
+  useEffect(() => {
+    fetchOrganizationReport()
+  }, [start_date, end_date]) // Depend on start_date and end_date
 
   useEffect(() => {
     const chart = refreshChart()
-
     return () => {
       if (chart) {
         chart.destroy()
       }
     }
-  }, [chartRef, mode])
+  }, [chartRef, mode, chartData])
 
   const refreshChart = () => {
     if (!chartRef.current) {
       return
     }
-
     const height = parseInt(getCSS(chartRef.current, 'height'))
-
-    const chart = new ApexCharts(chartRef.current, getChartOptions(height))
+    const chart = new ApexCharts(chartRef.current, getChartOptions(height, chartData))
     if (chart) {
       chart.render()
     }
-
     return chart
+  }
+
+  const updateFilters = async (new_filters) => {
+    if (auth?.token) {
+      setLoading(true)
+      try {
+        const responseData = await getOrganizationReport(
+          auth.token,
+          new_filters.start_date,
+          new_filters.end_date,
+          new_filters.date_request_string
+        )
+        setChartData(responseData.data)
+      } catch (error: any) {
+        toast.error(error.response.data.error)
+        console.error('Error fetching data:', error)
+      }
+      setLoading(false)
+    }
   }
 
   return (
@@ -49,7 +99,7 @@ const ChartsWidget1: React.FC<Props> = ({className, data}) => {
         <h3 className='card-title align-items-start flex-column'>
           <span className='card-label fw-bold fs-3 mb-1'>Recent Statistics</span>
 
-          <span className='text-muted fw-semibold fs-7'>More than 400 new members</span>
+          <span className='text-muted fw-semibold fs-7'>More than 50 new Items</span>
         </h3>
         {/* end::Title */}
 
@@ -65,7 +115,7 @@ const ChartsWidget1: React.FC<Props> = ({className, data}) => {
           >
             <KTIcon iconName='category' className='fs-2' />
           </button>
-          <Dropdown1 />
+          <Dropdown1 updateFilters={updateFilters} />
           {/* end::Menu */}
         </div>
         {/* end::Toolbar */}
@@ -83,9 +133,9 @@ const ChartsWidget1: React.FC<Props> = ({className, data}) => {
   )
 }
 
-export {ChartsWidget1}
+export {CombinedChart}
 
-function getChartOptions(height: number): ApexOptions {
+function getChartOptions(height: number, data): ApexOptions {
   const labelColor = getCSSVariableValue('--bs-gray-500')
   const borderColor = getCSSVariableValue('--bs-gray-200')
   const baseColor = getCSSVariableValue('--bs-primary')
@@ -96,15 +146,15 @@ function getChartOptions(height: number): ApexOptions {
     series: [
       {
         name: 'Invoices',
-        data: [44, 55, 57, 56, 61, 58],
+        data: data.invoice_statistics ? data.invoice_statistics.map((item) => item.count) : [],
       },
       {
         name: 'Inventory',
-        data: [76, 85, 101, 98, 87, 105],
+        data: data.inventory_statistics ? data.inventory_statistics.map((item) => item.count) : [],
       },
       {
         name: 'Customers',
-        data: [76, 85, 101, 98, 87, 105],
+        data: data.customer_statistics ? data.customer_statistics.map((item) => item.value) : [],
       },
     ],
     chart: {
@@ -123,7 +173,7 @@ function getChartOptions(height: number): ApexOptions {
       },
     },
     legend: {
-      show: false,
+      show: true,
     },
     dataLabels: {
       enabled: false,
@@ -134,7 +184,9 @@ function getChartOptions(height: number): ApexOptions {
       colors: ['transparent'],
     },
     xaxis: {
-      categories: ['Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+      categories: data.invoice_statistics
+        ? data.invoice_statistics.map((item) => `${item.year},${getMonthByNumbers(item.month)}`)
+        : [],
       axisBorder: {
         show: false,
       },
@@ -186,14 +238,14 @@ function getChartOptions(height: number): ApexOptions {
       },
       y: {
         formatter: function (val) {
-          return '$' + val + ' thousands'
+          return '' + val + ''
         },
       },
     },
     colors: [baseColor, secondaryColor, tertiaryColor],
     grid: {
       borderColor: borderColor,
-      strokeDashArray: 4,
+      strokeDashArray: 3,
       yaxis: {
         lines: {
           show: true,

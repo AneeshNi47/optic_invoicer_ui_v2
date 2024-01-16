@@ -18,6 +18,11 @@ const staffOptions: ReadonlyArray<{key: string; image: string; title: string}> =
     image: '/media/svg/brand-logos/kickstarter.svg',
     title: 'Customers',
   },
+  {
+    key: 'reports',
+    image: '/media/svg/general/rhone.svg',
+    title: 'Reports',
+  },
 ]
 
 const StaffTab = () => {

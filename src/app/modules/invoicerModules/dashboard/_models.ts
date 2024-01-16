@@ -19,6 +19,7 @@ export interface InvoicerDashboardModel {
   total_customers: number
   total_inventory: number
   total_invoices: number
+  invoice_statistics: JSON
   total_prescriptions: number
   translation_required: boolean
   updated_by: number

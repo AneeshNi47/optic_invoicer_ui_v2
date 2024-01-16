@@ -3,6 +3,7 @@ import {PageLink, PageTitle} from '../../../_metronic/layout/core'
 import {InvoicesTable} from './invoices/InvoicesTable'
 import {InventoryTable} from './inventory/InventoryTable'
 import {CustomerTable} from './customers/CustomerTable'
+import {ReportsDashboard} from './reports/ReportsDashboard'
 
 const widgetsBreadCrumbs: Array<PageLink> = [
   {
@@ -47,6 +48,15 @@ const InvoicePage = () => {
             <>
               <PageTitle breadcrumbs={widgetsBreadCrumbs}>Customers</PageTitle>
               <CustomerTable className='custom-list d-flex px-5 py-4' />
+            </>
+          }
+        />
+        <Route
+          path='reports'
+          element={
+            <>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Reports</PageTitle>
+              <ReportsDashboard className='custom-list d-flex px-5 py-4' />
             </>
           }
         />
