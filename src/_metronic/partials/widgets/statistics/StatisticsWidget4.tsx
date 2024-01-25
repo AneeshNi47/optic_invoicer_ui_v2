@@ -14,6 +14,8 @@ type Props = {
   description: string
   data_values: any[]
   data_keys: any[]
+  key_name: string
+  field_title: string
 }
 
 const StatisticsWidget4: React.FC<Props> = ({
@@ -24,6 +26,8 @@ const StatisticsWidget4: React.FC<Props> = ({
   description,
   data_values,
   data_keys,
+  key_name,
+  field_title,
 }) => {
   const chartRef = useRef<HTMLDivElement | null>(null)
   const {mode} = useThemeMode()
@@ -39,7 +43,16 @@ const StatisticsWidget4: React.FC<Props> = ({
 
     const chart = new ApexCharts(
       chartRef.current,
-      getChartOptions(height, labelColor, baseColor, lightColor, data_values, data_keys)
+      getChartOptions(
+        height,
+        labelColor,
+        baseColor,
+        lightColor,
+        data_values,
+        data_keys,
+        key_name,
+        field_title
+      )
     )
     if (chart) {
       chart.render()
@@ -94,12 +107,14 @@ function getChartOptions(
   baseColor: string,
   lightColor: string,
   data_values: any[],
-  data_keys: any[]
+  data_keys: any[],
+  key_name: string,
+  field_title: string
 ): ApexOptions {
   return {
     series: [
       {
-        name: 'Net Profit',
+        name: key_name,
         data: data_values,
       },
     ],
@@ -200,7 +215,7 @@ function getChartOptions(
       },
       y: {
         formatter: function (val) {
-          return '$' + val + ' thousands'
+          return field_title + val + ' '
         },
       },
     },

@@ -1,31 +1,38 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {Modal, Button} from 'react-bootstrap'
+import {useAuth} from '../../../../app/modules/auth'
 import {KTIcon} from '../../../helpers'
 import {IndividualInvoice} from '../../../../app/modules/invoicerModules/invoices/_models'
+import {toast} from 'react-toastify'
+import {getInvoiceObject} from '../../../../app/modules/invoicerModules/invoices/_requests'
 
 // Add any additional types you need
 type Props = {
   show: boolean
   handleClose: () => void
-  modalContent: IndividualInvoice
+  modalContent: IndividualInvoice | null
   // Add additional props as required
 }
 
-const InvoiceDetailsModal: React.FC<Props> = ({
-  show,
-  handleClose,
-  modalContent /*, other props */,
-}) => {
-  // Equivalent to componentDidMount and componentDidUpdate:
-  useEffect(
-    () => {
-      // Replace componentDidMount logic here
-      // Replace componentDidUpdate logic here
-    },
-    [
-      /* dependencies */
-    ]
-  )
+const InvoiceDetailsModal: React.FC<Props> = ({show, handleClose, modalContent}) => {
+  const [selectedInvoice, setSelectedInvoice] = useState<IndividualInvoice | null>(null)
+  const {auth} = useAuth()
+
+  const fetchIndividualCustomerData = async (modalContent) => {
+    if (auth?.token) {
+      try {
+        const responseData = await getInvoiceObject(auth.token, modalContent.id)
+        setSelectedInvoice(responseData.data)
+      } catch (error: any) {
+        toast.error(error.response.data.error)
+        console.error('Error fetching data:', error)
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchIndividualCustomerData(modalContent)
+  }, [modalContent])
 
   return (
     <Modal
@@ -43,7 +50,7 @@ const InvoiceDetailsModal: React.FC<Props> = ({
       <Modal.Header closeButton>
         <Modal.Title className='d-flex'>
           <KTIcon iconName='notepad' className='fs-1 text-primary text-lg-start symbol-50px px-1' />{' '}
-          <h2 className='text-primary'>{modalContent && modalContent.invoice_number}</h2>
+          <h2 className='text-primary'>{selectedInvoice && selectedInvoice.invoice_number}</h2>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body>
@@ -61,9 +68,13 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 <div className='col-6'>
                   <h6>
                     {`${
-                      modalContent && modalContent.customer && modalContent.customer.first_name
+                      selectedInvoice &&
+                      selectedInvoice.customer &&
+                      selectedInvoice.customer.first_name
                     } ${
-                      modalContent && modalContent.customer && modalContent.customer.last_name
+                      selectedInvoice &&
+                      selectedInvoice.customer &&
+                      selectedInvoice.customer.last_name
                     }` || '-'}
                   </h6>
                 </div>
@@ -79,7 +90,10 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 </div>
                 <div className='col-6'>
                   <h6>
-                    {(modalContent && modalContent.customer && modalContent.customer.email) || '-'}
+                    {(selectedInvoice &&
+                      selectedInvoice.customer &&
+                      selectedInvoice.customer.email) ||
+                      '-'}
                   </h6>
                 </div>
               </div>
@@ -97,7 +111,10 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 </div>
                 <div className='col-6'>
                   <h6>
-                    {(modalContent && modalContent.customer && modalContent.customer.phone) || '-'}
+                    {(selectedInvoice &&
+                      selectedInvoice.customer &&
+                      selectedInvoice.customer.phone) ||
+                      '-'}
                   </h6>
                 </div>
               </div>
@@ -115,9 +132,9 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 </div>
                 <div className='col-6'>
                   <h6>
-                    {(modalContent &&
-                      modalContent.customer &&
-                      (modalContent.customer.gender === 'M' ? 'Male' : 'Female')) ||
+                    {(selectedInvoice &&
+                      selectedInvoice.customer &&
+                      (selectedInvoice.customer.gender === 'M' ? 'Male' : 'Female')) ||
                       '-'}
                   </h6>
                 </div>
@@ -153,78 +170,78 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                   <tr>
                     <td>Left</td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_add) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_add) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_axis) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_axis) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_cylinder) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_cylinder) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_ipd) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_ipd) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_prism) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_prism) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.left_sphere) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_sphere) ||
                         '-'}
                     </td>
                   </tr>
                   <tr>
                     <td>Right</td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_add) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_add) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_axis) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_axis) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_cylinder) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_cylinder) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_ipd) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_ipd) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_prism) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_prism) ||
                         '-'}
                     </td>
                     <td>
-                      {(modalContent &&
-                        modalContent.prescription &&
-                        modalContent.prescription.right_sphere) ||
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_sphere) ||
                         '-'}
                     </td>
                   </tr>
@@ -238,9 +255,9 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 <div className='col-6'>Pupillary Distance:</div>
                 <div className='col-6'>
                   <h6>
-                    {(modalContent &&
-                      modalContent.prescription &&
-                      modalContent.prescription.pupillary_distance) ||
+                    {(selectedInvoice &&
+                      selectedInvoice.prescription &&
+                      selectedInvoice.prescription.pupillary_distance) ||
                       '-'}
                   </h6>
                 </div>
@@ -251,9 +268,9 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 <div className='col-4'>Additional Notes:</div>
                 <div className='col-8'>
                   <h6>
-                    {(modalContent &&
-                      modalContent.prescription &&
-                      modalContent.prescription.additional_notes) ||
+                    {(selectedInvoice &&
+                      selectedInvoice.prescription &&
+                      selectedInvoice.prescription.additional_notes) ||
                       '-'}
                   </h6>
                 </div>
@@ -287,9 +304,9 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 {/* end::Table head */}
                 {/* begin::Table body */}
                 <tbody>
-                  {modalContent &&
-                    modalContent.inventory_items &&
-                    modalContent.inventory_items.map((element, index) => {
+                  {selectedInvoice &&
+                    selectedInvoice.inventory_items &&
+                    selectedInvoice.inventory_items.map((element, index) => {
                       return (
                         <tr key={index}>
                           <td>{element.cost_value}</td>
@@ -342,9 +359,9 @@ const InvoiceDetailsModal: React.FC<Props> = ({
               {/* end::Table head */}
               {/* begin::Table body */}
               <tbody>
-                {modalContent &&
-                  modalContent.inventory_items &&
-                  modalContent.invoice_payment.map((element, index) => {
+                {selectedInvoice &&
+                  selectedInvoice.inventory_items &&
+                  selectedInvoice.invoice_payment.map((element, index) => {
                     return (
                       <tr key={index}>
                         <td>{element.amount}</td>
@@ -383,22 +400,22 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                   <tr>
                     <td>
                       <h3 className='text-primary'>{`${
-                        (modalContent && modalContent.total) || '-'
+                        (selectedInvoice && selectedInvoice.total) || '-'
                       }`}</h3>
                     </td>
                     <td>
                       <h3 className='text-primary'>{`${
-                        (modalContent && modalContent.discount) || '-'
+                        (selectedInvoice && selectedInvoice.discount) || '-'
                       }`}</h3>
                     </td>
                     <td>
                       <h3 className='text-primary'>{`${
-                        (modalContent && modalContent.advance) || '-'
+                        (selectedInvoice && selectedInvoice.advance) || '-'
                       }`}</h3>
                     </td>
                     <td>
                       <h3 className='text-primary'>{`${
-                        (modalContent && modalContent.balance) || '-'
+                        (selectedInvoice && selectedInvoice.balance) || '-'
                       }`}</h3>
                     </td>
                   </tr>
@@ -432,7 +449,7 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                 </div>
                 <div className='col-6'>
                   <div className='col-8'>
-                    <h6>{`${(modalContent && modalContent.date) || '-'}`}</h6>
+                    <h6>{`${(selectedInvoice && selectedInvoice.date) || '-'}`}</h6>
                   </div>
                 </div>
               </div>
@@ -449,7 +466,7 @@ const InvoiceDetailsModal: React.FC<Props> = ({
                   Delivery Date:
                 </div>
                 <div className='col-6'>
-                  <h6>{`${(modalContent && modalContent.delivery_date) || '-'}`}</h6>
+                  <h6>{`${(selectedInvoice && selectedInvoice.delivery_date) || '-'}`}</h6>
                 </div>
               </div>
             </div>
@@ -462,17 +479,14 @@ const InvoiceDetailsModal: React.FC<Props> = ({
             Remarks
           </h2>
           <div className='col-6'>
-            <h6>{`${(modalContent && modalContent.remarks) || '-'}`}</h6>
+            <h6>{`${(selectedInvoice && selectedInvoice.remarks) || '-'}`}</h6>
           </div>
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant='secondary' onClick={handleClose}>
+        <Button variant='danger' onClick={handleClose}>
           Close
         </Button>
-        {/* <Button variant='primary' onClick={handleAddItem}>
-          Save Changes
-        </Button> */}
       </Modal.Footer>
     </Modal>
   )

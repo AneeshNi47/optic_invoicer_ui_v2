@@ -3,7 +3,7 @@ import {useIntl} from 'react-intl'
 import {PageLink, PageTitle} from '../../../../_metronic/layout/core'
 import {StatisticsWidget4} from '../../../../_metronic/partials/widgets'
 import {useAuth} from '../../auth'
-import {getOrganisations} from './requests'
+import {getOrganizations} from './requests'
 import {InvoicerDashboardModel} from './_models'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {toast} from 'react-toastify'
@@ -35,7 +35,7 @@ const DashboardPage = () => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getOrganisations(auth.token)
+        const responseData = await getOrganizations(auth.token)
         console.log(responseData.data)
         setOrganisationItems((prev: any) => ({
           ...prev,
@@ -116,6 +116,8 @@ const DashboardPage = () => {
               description='Invoices'
               data_values={invoiceDataValues}
               data_keys={invoiceDataKeys}
+              key_name='Total Value'
+              field_title='AED'
               change={`${
                 organizationItems.total_invoices ? organizationItems.total_invoices : '...'
               }`}
@@ -134,6 +136,8 @@ const DashboardPage = () => {
               description='Inventory'
               data_values={inventoryDataValues}
               data_keys={inventoryDataKeys}
+              key_name='Total Value'
+              field_title='AED'
               change={`${
                 organizationItems.total_inventory ? organizationItems.total_inventory : '...'
               }`}
@@ -152,6 +156,8 @@ const DashboardPage = () => {
               description='Customers'
               data_values={customerDataValues}
               data_keys={customerDataKeys}
+              key_name='Customers'
+              field_title=''
               change={`${
                 organizationItems.total_customers ? organizationItems.total_customers : '...'
               }`}

@@ -1,5 +1,5 @@
-import React, {useState} from 'react'
-import {Modal, Button} from 'react-bootstrap'
+import React from 'react'
+import {Modal} from 'react-bootstrap'
 import {Formik, Field, Form, ErrorMessage} from 'formik'
 import {useAuth} from '../../../../app/modules/auth'
 import * as Yup from 'yup'
@@ -149,7 +149,6 @@ const InvoicePaymentModal: React.FC<Props> = ({
                     </button>
                   </div>
                 </div>{' '}
-                {/* Vertical Divider */}
                 <div className='col-md-1 d-none d-md-block'>
                   <div
                     style={{
@@ -161,7 +160,6 @@ const InvoicePaymentModal: React.FC<Props> = ({
                     }}
                   />
                 </div>
-                {/* Right Column */}
                 <div className='col-md-5 d-flex align-items-center justify-content-center'>
                   <button className='btn btn-success' onClick={completePayment}>
                     Complete Payment {modalContent.balance}

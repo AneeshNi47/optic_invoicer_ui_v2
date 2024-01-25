@@ -1,7 +1,5 @@
-import React, {useState, useEffect} from 'react'
-import {Modal, Button} from 'react-bootstrap'
-import {KTIcon} from '../../../helpers'
-import {AddInventoryItem} from '../../../../app/modules/invoicerModules/inventory/_models'
+import React from 'react'
+import {Modal} from 'react-bootstrap'
 import AddInventory from '../../../../app/modules/invoicerModules/inventory/AddInventory'
 import AddInvoice from '../../../../app/modules/invoicerModules/invoices/AddInvoice'
 import AddOrganizations from '../../../../app/modules/adminModules/organizations/AddOrganization'
@@ -15,7 +13,6 @@ type Props = {
 }
 
 const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName /*, other props */}) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(false)
   let title: string = ''
   let componentToRender: JSX.Element = <></>
 
@@ -41,7 +38,6 @@ const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName /*, o
       dialogClassName='modal-xl'
       aria-hidden='true'
       onHide={handleClose}
-      // ... other modal props
     >
       <Modal.Header closeButton>
         <Modal.Title>{title}</Modal.Title>

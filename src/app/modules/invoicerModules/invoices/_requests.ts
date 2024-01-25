@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {InvoiceModel} from './_models'
+import {InvoiceModel, IndividualInvoice} from './_models'
 
 const API_URL = process.env.REACT_APP_API_URL
 
@@ -19,6 +19,15 @@ export function getInvoices(token: string, next: string, page: number, initialLo
     return axios.get<InvoiceModel[]>(`${next}`, {headers})
   }
   return axios.get<InvoiceModel>(`${GET_INVOICES_URL}/?page_size=${page}`, {headers})
+}
+
+// Server should return InvoiceModelObject
+export function getInvoiceObject(token: string, id: string) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  return axios.get<IndividualInvoice>(`${GET_INVOICES_URL}/${id}`, {headers})
 }
 
 export function addInvoiceService(token: string, data: InvoiceModel) {
