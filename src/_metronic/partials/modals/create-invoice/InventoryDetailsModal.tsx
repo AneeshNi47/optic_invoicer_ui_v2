@@ -1,7 +1,5 @@
-import React, {useState, useEffect} from 'react'
+import React from 'react'
 import {Modal, Button} from 'react-bootstrap'
-import {KTIcon} from '../../../helpers'
-import {AddInventoryItem} from '../../../../app/modules/invoicerModules/inventory/_models'
 import {InventoryItem} from '../../../../app/modules/invoicerModules/inventory/_models'
 
 // Add any additional types you need
@@ -9,37 +7,9 @@ type Props = {
   show: boolean
   handleClose: () => void
   modalContent: InventoryItem
-  // Add additional props as required
 }
 
-const InventoryDetailsModal: React.FC<Props> = ({
-  show,
-  handleClose,
-  modalContent /*, other props */,
-}) => {
-  const [selectedCustomer, setSelectedCustomer] = useState(false)
-  // ... Define other states
-
-  // Equivalent to componentDidMount and componentDidUpdate:
-  useEffect(
-    () => {
-      // Replace componentDidMount logic here
-      // Replace componentDidUpdate logic here
-    },
-    [
-      /* dependencies */
-    ]
-  )
-
-  console.log(modalContent, '*******')
-
-  // Event handlers and other functions
-  const handleAddItem = () => {
-    // Logic for adding item
-  }
-
-  // Other functions...
-
+const InventoryDetailsModal: React.FC<Props> = ({show, handleClose, modalContent}) => {
   return (
     <Modal
       className='modal fade'
@@ -51,7 +21,6 @@ const InventoryDetailsModal: React.FC<Props> = ({
       dialogClassName='modal-xl'
       aria-hidden='true'
       onHide={handleClose}
-      // ... other modal props
     >
       <Modal.Header closeButton>
         <Modal.Title className='d-flex'>
@@ -141,12 +110,9 @@ const InventoryDetailsModal: React.FC<Props> = ({
         </div>
       </Modal.Body>
       <Modal.Footer>
-        <Button variant='secondary' onClick={handleClose}>
+        <Button variant='danger' onClick={handleClose}>
           Close
         </Button>
-        {/* <Button variant='primary' onClick={handleAddItem}>
-          Save Changes
-        </Button> */}
       </Modal.Footer>
     </Modal>
   )

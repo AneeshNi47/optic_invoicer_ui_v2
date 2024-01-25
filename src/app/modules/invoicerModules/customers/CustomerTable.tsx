@@ -1,102 +1,90 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, { useState, useEffect, useRef } from 'react';
-import { KTIcon, toAbsoluteUrl } from '../../../../_metronic/helpers';
-import { Dropdown1 } from '../../../../_metronic/partials';
-import { useAuth } from '../../auth';
-// import { getInventoryItems } from './_requests';
-import { InventoryDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal';
-import { getCustomerItems } from './_requests';
-import { CustomerDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/CustomerDetailsModal';
-import { toast } from 'react-toastify';
+import React, {useState, useEffect, useRef} from 'react'
+import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
+import {Dropdown1} from '../../../../_metronic/partials'
+import {useAuth} from '../../auth'
+import {getCustomerItems} from './_requests'
+import {CustomerDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/CustomerDetailsModal'
+import {toast} from 'react-toastify'
 
 // import { InventoryItem, InventoryItems } from './_models';
 
 type Props = {
-  className: string;
-};
+  className: string
+}
 
-const CustomerTable: React.FC<Props> = ({ className }) => {
-  const { auth } = useAuth();
-  const [customerItems, setCustomerItems] = useState<any>({});
-  const [loading, setLoading] = useState(false);
-  const [dataTodisplay, setDataToDisplay] = useState<any[]>([]);
+const CustomerTable: React.FC<Props> = ({className}) => {
+  const {auth} = useAuth()
+  const [customerItems, setCustomerItems] = useState<any>({})
+  const [loading, setLoading] = useState(false)
+  const [dataToDisplay, setDataToDisplay] = useState<any[]>([])
   const [showModal, setShowModal] = useState(false)
   const [modalContent, setModalContent] = useState<any>({})
 
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null)
 
   const handleOpenModal = (values) => {
-    setShowModal(true);
-    setModalContent(values);
-  };
+    setShowModal(true)
+    setModalContent(values)
+  }
 
   const handleCloseModal = () => {
-    setShowModal(false);
-  };
+    setShowModal(false)
+  }
 
   const fetchInventoryData = async () => {
     if (auth?.token) {
-      setLoading(true);
+      setLoading(true)
       try {
-        const responseData = await getCustomerItems(auth.token, customerItems.next, 5);
+        const responseData = await getCustomerItems(auth.token, customerItems.next, 5)
         setCustomerItems((prev: any) => ({
           ...prev,
           ...responseData.data,
-        }));
-
-        setDataToDisplay((prev: any) => ([
-          ...prev,
-          ...responseData.data.results,
-        ]));
+        }))
+        setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
       } catch (error: any) {
         toast.error(error.response.data.error)
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error)
       }
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchInventoryData();
-  }, [auth?.token]);
+    fetchInventoryData()
+  }, [auth?.token])
 
   useEffect(() => {
-    const SCROLL_THRESHOLD = 10; // Adjust the threshold as needed
-
+    const SCROLL_THRESHOLD = 10
     const handleScroll = () => {
-      const isScrollingUp = containerRef.current && containerRef.current.scrollTop <= SCROLL_THRESHOLD;
       const isScrollingDown =
         containerRef.current &&
         containerRef.current.scrollTop + containerRef.current.clientHeight >=
-          containerRef.current.scrollHeight - SCROLL_THRESHOLD;
-
-      // if (isScrollingUp && !loading) {
-      //   fetchInventoryData();
-      // } 
+          containerRef.current.scrollHeight - SCROLL_THRESHOLD
       if (isScrollingDown && !loading && customerItems.next) {
-        fetchInventoryData();
+        fetchInventoryData()
       }
-    };
+    }
 
     if (containerRef.current) {
-      containerRef.current.addEventListener('scroll', handleScroll);
+      containerRef.current.addEventListener('scroll', handleScroll)
     }
 
     return () => {
       if (containerRef.current) {
-        containerRef.current.removeEventListener('scroll', handleScroll);
+        containerRef.current.removeEventListener('scroll', handleScroll)
       }
-    };
-  }, [auth?.token, loading]);
+    }
+  }, [auth?.token, loading])
 
   return (
     <div className={`card ${className}`}>
-       <CustomerDetailsModal
+      <CustomerDetailsModal
         show={showModal}
         handleClose={handleCloseModal}
         modalContent={modalContent}
       />
-      
+
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
@@ -131,71 +119,87 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
       {/* begin::Body */}
       <div className='card-body py-3'>
         {/* begin::Table container */}
-        <div className='table-responsive' style={{ overflowY: 'auto', maxHeight: '450px' }} ref={containerRef}>
+        <div
+          className='table-responsive'
+          style={{overflowY: 'auto', maxHeight: '450px'}}
+          ref={containerRef}
+        >
           {/* begin::Table */}
           <table className='table align-middle gs-0 gy-5'>
             {/* begin::Table head */}
             <thead>
               <tr>
-                <th className='p-0 w-50px'></th>
-                <th className='p-0 min-w-100px'><h4>Name</h4></th>
-                <th className='p-0 min-w-100px'><h4>Phone</h4></th>
-                <th className='p-0 min-w-125px'><h4>Is Active</h4></th>
-                <th className='p-0 min-w-90px'><h4>Gender</h4></th>
-                <th className='p-0 min-w-50px'><h4>Action</h4></th>
+                <th className='p-0 min-w-100px'></th>
+                <th className='p-0 min-w-100px'>
+                  <h4>Name</h4>
+                </th>
+                <th className='p-0 min-w-100px'>
+                  <h4>Phone</h4>
+                </th>
+                <th className='p-0 min-w-125px'>
+                  <h4>Is Active</h4>
+                </th>
               </tr>
             </thead>
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              {customerItems.results && dataTodisplay.map((item, index) => (
-                <tr key={index}>
-                  <td>
-                    <div className='symbol symbol-50px me-2'>
-                      <span className='symbol-label'>
-                        <img
-                          src={toAbsoluteUrl('/media/svg/brand-logos/plurk.svg')}
-                          className='h-50 align-self-center'
-                          alt=''
-                        />
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6' onClick={() => {
-                      handleOpenModal(item);
-                    }}>
-                      {item.first_name + " " + item.last_name}
-                    </a>
-                    <span className='text-muted fw-semibold d-block fs-7'>{item.email}</span>
-                  </td>
-                  <td className='text-start'>
-                    <span className='badge badge-light-danger fw-semibold me-1'><h5>{item.phone}</h5></span>
-                  </td>
-                  <td className='text-start'>
-                    <span className='text-muted fw-semibold'>{item.is_active ? <h5 className='text-success'>Active</h5> : <h5 className='text-danger'>Not Active</h5>}</span>
-                  </td>
-                  <td className='text-start'>
-                    <span className='text-muted fw-semibold'>{item.gender == 'M' ? <h5>Male</h5> : <h5>Female</h5>}</span>
-                  </td>
-                  <td className='text-start'>
-                    
-                    <a
-                      href='#'
-                      className='btn btn-sm btn-icon btn-bg-light btn-active-color-primary'
+              {customerItems.results &&
+                dataToDisplay.map((item, index) => (
+                  <tr key={index}>
+                    <td
                       onClick={() => {
-                        handleOpenModal(item);
+                        handleOpenModal(item)
                       }}
                     >
-                      <KTIcon iconName='eye' className='fs-2' />
-                    </a>
-                  </td>
-                </tr>
-              ))}
+                      <div className='symbol symbol-50px me-2'>
+                        <span className='symbol-label'>
+                          <img
+                            src={
+                              item.gender === 'M'
+                                ? toAbsoluteUrl('/media/svg/avatars/001-boy.svg')
+                                : item.gender === 'F'
+                                ? toAbsoluteUrl('/media/svg/avatars/002-girl.svg')
+                                : toAbsoluteUrl('/media/svg/avatars/blank.svg')
+                            }
+                            className='h-50 align-self-center hover-primary'
+                            alt=''
+                          />
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <a
+                        href='#'
+                        className='text-dark fw-bold text-hover-primary mb-1 fs-6'
+                        onClick={() => {
+                          handleOpenModal(item)
+                        }}
+                      >
+                        {item.first_name + ' ' + item.last_name}
+                      </a>
+                      <span className='text-muted fw-semibold d-block fs-7'>{item.email}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='badge badge-light-danger fw-semibold me-1'>
+                        <h5>{item.phone}</h5>
+                      </span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>
+                        {item.is_active ? (
+                          <h5 className='text-success'>Active</h5>
+                        ) : (
+                          <h5 className='text-danger'>Not Active</h5>
+                        )}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
             </tbody>
             {/* end::Table body */}
           </table>
-          <div style={{ height: '10px' }} />
+          <div style={{height: '10px'}} />
           {loading && <p>Loading...</p>}
           {/* end::Table */}
         </div>
@@ -203,7 +207,7 @@ const CustomerTable: React.FC<Props> = ({ className }) => {
       </div>
       {/* end::Body */}
     </div>
-  );
-};
+  )
+}
 
-export { CustomerTable };
+export {CustomerTable}
