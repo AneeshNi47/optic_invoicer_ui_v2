@@ -117,3 +117,21 @@ export interface IndividualInvoice {
   organization: number
   items: any[] // Update with correct type if applicable
 }
+
+export interface SubscriptionResponse {
+  subscription_id: number
+  trial_start_date: string
+  trial_end_date: string
+  subscription_type: string
+  create_invoice_permission: boolean
+  status: string
+  created_on: string
+  payments: Payment[]
+}
+
+export interface Payment {
+  payment_id: number
+  amount: number
+  payment_mode: string
+  created_on: string
+}

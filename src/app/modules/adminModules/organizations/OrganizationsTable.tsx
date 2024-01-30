@@ -6,8 +6,8 @@ import {useAuth} from '../../auth'
 import {getOrganisations} from './_requests'
 import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {OrganisationModel} from './_models'
-import { toast } from 'react-toastify'
-import { useInventoryContext } from '../../invoicerModules/inventory/InventoryProvider'
+import {toast} from 'react-toastify'
+import {useInventoryContext} from '../../invoicerModules/inventory/InventoryProvider'
 
 type Props = {
   className: string
@@ -110,23 +110,14 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
                 <th className='p-0 min-w-120px'>
                   <h4>Name</h4>
                 </th>
-                <th className='p-0 min-w-120px'>
-                  <h4>Email</h4>
-                </th>
-                <th className='p-0 min-w-125px'>
-                  <h4>Is Active</h4>
-                </th>
                 <th className='p-0 min-w-90px'>
-                  <h4>Mobile</h4>
+                  <h4>Phone</h4>
                 </th>
                 <th className='p-0 min-w-50px'>
-                  <h4>Staff Count</h4>
+                  <h4>Staff</h4>
                 </th>
                 <th className='p-0 min-w-50px'>
-                  <h4>Staff First Name</h4>
-                </th>
-                <th className='p-0 min-w-50px'>
-                  <h4>Subscription Status</h4>
+                  <h4>Subscription</h4>
                 </th>
               </tr>
             </thead>
@@ -137,49 +128,39 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
                 inventoryItems.map((item, index) => (
                   <tr key={index}>
                     <td>
-                      <div className='symbol symbol-50px me-2'>
-                        <span className='symbol-label'>
-                          <img
-                            src={toAbsoluteUrl('/media/svg/brand-logos/plurk.svg')}
-                            className='h-50 align-self-center'
-                            alt=''
-                          />
-                        </span>
+                      <div
+                        className={
+                          item.is_active
+                            ? 'btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
+                            : 'btn btn-sm btn-icon btn-color-danger btn-active-light-danger'
+                        }
+                      >
+                        {item.is_active ? (
+                          <KTIcon iconName='check-square' className='fs-2' />
+                        ) : (
+                          <KTIcon iconName='cross-square' className='fs-2' />
+                        )}
                       </div>
                     </td>
                     <td>
                       <a href='#' className='text-dark fw-bold text-hover-primary mb-1 fs-6'>
                         {item.name}
                       </a>
-                      <span className='text-muted fw-semibold d-block fs-7'>{item.email}</span>
-                    </td>
-                    <td className='text-start'>
-                      <span className='badge badge-light-danger fw-semibold me-1'>
-                        <h5>{item.email}</h5>
+                      <span className='text-muted fw-semibold d-block fs-7'>
+                        {item.staff_count}
                       </span>
                     </td>
-                    <td className='text-start'>
-                      <span className='text-muted fw-semibold'>
-                        {item.is_active ? (
-                          <h4 className='text-success'>Active</h4>
-                        ) : (
-                          <h4 className='text-danger'>Not Active</h4>
-                        )}
-                      </span>
-                    </td>
-                    <td className='text-start'>
-                      <span className='text-muted fw-semibold'>
+                    <td>
+                      {item.email}
+                      <span className='text-muted'>
                         <h5>{item.primary_phone_mobile}</h5>
                       </span>
-                    </td>
-                    <td className='text-start'>
-                      <h5>{item.staff_count}</h5>
                     </td>
                     <td className='text-start'>
                       <h5>{item.superstaff_first_name}</h5>
                     </td>
                     <td className='text-start'>
-                      {/* <h5>{item.subscription_status || '-'}</h5> */}
+                      <h5>{item.subscription_status ? item.subscription_status.status : '-'}</h5>
                     </td>
                   </tr>
                 ))}

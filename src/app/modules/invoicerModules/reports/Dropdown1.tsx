@@ -47,7 +47,8 @@ export function Dropdown1({updateFilters}: Dropdown1Props) {
                 <option value='all_time'>All Time</option>
                 <option value='this_month'>This Month</option>
                 <option value='last_month'>Last Month</option>
-                <option value='last_week'>Last Week</option>
+                <option value='this_year'>This year</option>
+                <option value='last_year'>Last Year</option>
                 <option value='custom_dates'>Custom Dates</option>
               </Field>
             </div>

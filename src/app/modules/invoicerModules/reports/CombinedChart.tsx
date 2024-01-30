@@ -154,7 +154,7 @@ function getChartOptions(height: number, data): ApexOptions {
       },
       {
         name: 'Customers',
-        data: data.customer_statistics ? data.customer_statistics.map((item) => item.value) : [],
+        data: data.customer_statistics ? data.customer_statistics.map((item) => item.count) : [],
       },
     ],
     chart: {

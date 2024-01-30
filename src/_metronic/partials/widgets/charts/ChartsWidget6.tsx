@@ -90,11 +90,6 @@ function getChartOptions(height: number): ApexOptions {
   return {
     series: [
       {
-        name: 'Net Profit',
-        type: 'bar',
-        data: [40, 50, 65, 70, 50, 30],
-      },
-      {
         name: 'Revenue',
         type: 'bar',
         data: [20, 20, 25, 30, 30, 20],
