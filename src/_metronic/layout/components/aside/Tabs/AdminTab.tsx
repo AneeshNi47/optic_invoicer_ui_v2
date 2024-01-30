@@ -55,13 +55,9 @@ const AdminTab = () => {
               className='custom-list d-flex align-items-center px-5 py-4'
             >
               {/*begin::Symbol*/}
-              <div className='symbol symbol-40px me-5'>
+              <div className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'>
                 <span className='symbol-label'>
-                  <img
-                    src={toAbsoluteUrl(p.image)}
-                    alt={p.title}
-                    className='h-50 align-self-center'
-                  />
+                  <img src={toAbsoluteUrl(p.image)} alt={p.title} className='fs-2' />
                 </span>
               </div>
               {/*end::Symbol*/}

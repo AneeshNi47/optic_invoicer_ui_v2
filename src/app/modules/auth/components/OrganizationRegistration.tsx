@@ -7,10 +7,8 @@ import {getUserByToken, register} from '../core/_requests'
 import {Link} from 'react-router-dom'
 import {PasswordMeterComponent} from '../../../../_metronic/assets/ts/components'
 import {useAuth} from '../core/Auth'
-
 const CAPTCHA_SITE_KEY = process.env.CAPTCHA_SITE_KEY
 export const site_key = `${CAPTCHA_SITE_KEY}`
-
 const initialValues = {
   firstname: '',
   lastname: '',
@@ -308,7 +306,7 @@ export function Registration() {
         </Link>
       </div>
 
-      <ReCAPTCHA sitekey={CAPTCHA_SITE_KEY} onChange={handleCaptchaResponseChange} />
+      <ReCAPTCHA sitekey={site_key} onChange={handleCaptchaResponseChange} />
 
       {/* end::Form group */}
     </form>

@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import {Formik, Field, Form, ErrorMessage} from 'formik'
 import * as Yup from 'yup'
 import {AddInventoryItem} from './_models'
@@ -6,7 +6,8 @@ import {addInventory} from './_requests'
 import {useAuth} from '../../auth'
 import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
-
+import {checkSubscription} from '../invoices/_requests'
+import {SubscriptionResponse} from '../invoices/_models'
 import {useInventoryContext} from './InventoryProvider'
 
 interface AddInventoryProps {
@@ -26,6 +27,8 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
     cost_value: 0,
     brand: '',
   }
+  const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionResponse | any>({})
+  const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
 
   const validationSchema = Yup.object({
     item_type: Yup.string().required('Required'),
@@ -47,9 +50,25 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
       ),
     brand: Yup.string().required('Required'),
   })
-
-  const handleSubmit = async (values: AddInventoryItem) => {
+  useEffect(() => {
     if (auth?.token) {
+      const fetchApi = async () => {
+        try {
+          const responseData = await checkSubscription(auth.token)
+          setSubscriptionDetails(responseData.data)
+          setCreateInvoicePermission(responseData.data.create_invoice_permission)
+          console.log('create permission:', responseData.data.create_invoice_permission)
+        } catch (error) {
+          console.error('Error fetching API', error)
+          // Handle error as needed
+        }
+      }
+
+      fetchApi()
+    }
+  }, [])
+  const handleSubmit = async (values: AddInventoryItem) => {
+    if (auth?.token && createInvoicePermission) {
       try {
         const response = await addInventory(auth?.token, values)
 
@@ -146,12 +165,20 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
             </div>
           </div>
 
-          <div className='row mt-5'>
+          <div className='row mt-12'>
             <div className='form-group col-md-12 d-flex justify-content-center'>
-              <button type='submit' className='btn btn-primary'>
+              <button disabled={!createInvoicePermission} type='submit' className='btn btn-primary'>
                 Submit
               </button>
             </div>
+            {!createInvoicePermission && (
+              <div className='form-group col-md-12 text-center mt-2'>
+                <span className='text-danger'>
+                  Your {subscriptionDetails ? subscriptionDetails.subscription_type : '-'}{' '}
+                  subscription has ended, please contact the administrator to add more Inventory.
+                </span>
+              </div>
+            )}
           </div>
         </Form>
       </Formik>

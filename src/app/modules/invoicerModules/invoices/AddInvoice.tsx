@@ -3,9 +3,14 @@ import {Formik, Field, Form, ErrorMessage} from 'formik'
 import * as Yup from 'yup'
 import {useAuth} from '../../auth'
 import {KTIcon} from '../../../../_metronic/helpers'
-import {addInvoiceService} from './_requests'
+import {SubscriptionResponse} from './_models'
 import AsyncSelect from 'react-select/async'
-import {fetchSearchedCustomers, fetchSearchedInventory} from './_requests'
+import {
+  addInvoiceService,
+  fetchSearchedCustomers,
+  fetchSearchedInventory,
+  checkSubscription,
+} from './_requests'
 import Swal from 'sweetalert2'
 import {toast} from 'react-toastify'
 import {useInventoryContext} from '../inventory/InventoryProvider'
@@ -32,13 +37,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const [is_taxable, setIs_taxable] = useState(false)
   const [tax_percentage, setTaxPercentage] = useState(5)
   const [selectedPrescription, setSelectedPrescription] = useState(null)
-
   const [customerPrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
-
   const [searchInventoryInput, setSearchInventoryInput] = useState('')
   const [selectedInventoryOption, setSelectedInventoryOption] = useState<any>([])
   const [itemQuantities, setItemQuantities] = useState({})
   const [totalCost, setTotalCost] = useState(0)
+  const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionResponse | any>({})
+  const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
 
   const {setShouldFetchInvoice} = useInventoryContext()
 
@@ -52,6 +57,24 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
       return updatedOptions
     })
   }
+
+  useEffect(() => {
+    if (auth?.token) {
+      const fetchApi = async () => {
+        try {
+          const responseData = await checkSubscription(auth.token)
+          setSubscriptionDetails(responseData.data)
+          setCreateInvoicePermission(responseData.data.create_invoice_permission)
+          console.log('create permission:', responseData.data.create_invoice_permission)
+        } catch (error) {
+          console.error('Error fetching API', error)
+          // Handle error as needed
+        }
+      }
+
+      fetchApi()
+    }
+  }, [])
 
   useEffect(() => {
     const total = calculateTotal()
@@ -179,7 +202,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     pupillary_distance: numberOrNaNValidation('Pupillary Distance', 10, 100),
     additional_notes: Yup.string(),
     remarks: Yup.string(),
-    delivery_date: Yup.string().required('Delivery Dater is required'),
+    delivery_date: Yup.string().required('Delivery Date is required'),
     discount: Yup.number().max(totalCost, 'Discount cannot exceed total cost'),
     advance: Yup.number().max(totalCost, 'Advance cannot exceed total cost'),
     advance_payment_mode: Yup.string().required('Advance Payment mode is required'),
@@ -228,7 +251,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
       tax_percentage: values.tax_percentage,
     }
 
-    if (auth?.token) {
+    if (auth?.token && createInvoicePermission) {
       try {
         console.log('submittni')
         const response = await addInvoiceService(auth?.token, invoiceData)
@@ -986,10 +1009,18 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           </div>
           <div className='row mt-12'>
             <div className='form-group col-md-12 d-flex justify-content-center'>
-              <button type='submit' className='btn btn-primary'>
+              <button disabled={!createInvoicePermission} type='submit' className='btn btn-primary'>
                 Submit
               </button>
             </div>
+            {!createInvoicePermission && (
+              <div className='form-group col-md-12 text-center mt-2'>
+                <span className='text-danger'>
+                  Your {subscriptionDetails ? subscriptionDetails.subscription_type : '-'}{' '}
+                  subscription has ended, please contact the administrator to add more invoices.
+                </span>
+              </div>
+            )}
           </div>
         </Form>
       )}

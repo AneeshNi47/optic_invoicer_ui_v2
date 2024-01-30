@@ -1,15 +1,8 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React from 'react'
-import {
-  ChartsWidget2,
-  ChartsWidget3,
-  ChartsWidget4,
-  ChartsWidget5,
-  ChartsWidget6,
-  ChartsWidget7,
-  ChartsWidget8,
-} from '../../../../_metronic/partials/widgets'
 import {CombinedChart} from './CombinedChart'
+import {CountChart} from './CountChart'
+import {CountValueChart} from './CountValueChart'
 
 // import { InventoryItem, InventoryItems } from './_models';
 
@@ -26,13 +19,20 @@ const ReportsDashboard: React.FC<Props> = ({className}) => {
       <div className='card-body py-3'>
         {/* begin::Table container */}
         <CombinedChart className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget2 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget3 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget4 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget5 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget6 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget7 className='card-xl-stretch mb-xl-8' />
-        <ChartsWidget8 className='card-xl-stretch mb-xl-8' />
+        <CountChart model='Customer' color='primary' className='card-xl-stretch mb-xl-8' />
+        <CountChart model='Prescription' color='info' className='card-xl-stretch mb-xl-8' />
+        <CountValueChart
+          model='Inventory'
+          color1='info'
+          color2='danger'
+          className='card-xl-stretch mb-xl-8'
+        />
+        <CountValueChart
+          model='Invoice'
+          color1='success'
+          color2='danger'
+          className='card-xl-stretch mb-xl-8'
+        />
         {/* end::Table container */}
       </div>
       {/* end::Body */}

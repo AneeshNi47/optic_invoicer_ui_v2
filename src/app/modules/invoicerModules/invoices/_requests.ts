@@ -1,5 +1,5 @@
 import axios from 'axios'
-import {InvoiceModel, IndividualInvoice} from './_models'
+import {InvoiceModel, IndividualInvoice, SubscriptionResponse} from './_models'
 
 const API_URL = process.env.REACT_APP_API_URL
 
@@ -8,6 +8,16 @@ export const GET_CUSTOMER_URL = `${API_URL}/api/search_customer`
 export const GET_INVENTORY_URL = `${API_URL}/api/search_inventory`
 export const POST_PAYMENT_URL = `${API_URL}/api/invoice-payment`
 export const FILE_DOWNLOAD_URL = `${API_URL}/api/invoice/customer-pdf/`
+export const CHECK_SUBSCRIPTION_URL = `${API_URL}/api/subscription_check`
+
+// Server should return InvoiceModel
+export function checkSubscription(token: string) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+  return axios.get<SubscriptionResponse>(`${CHECK_SUBSCRIPTION_URL}`, {headers})
+}
 
 // Server should return InvoiceModel
 export function getInvoices(token: string, next: string, page: number, initialLoad: boolean) {
