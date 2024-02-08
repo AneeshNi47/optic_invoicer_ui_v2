@@ -5,7 +5,9 @@ import {useAuth} from '../../auth'
 import {addOrganisation} from './_requests'
 import {toast} from 'react-toastify'
 import {useInventoryContext} from '../../invoicerModules/inventory/InventoryProvider'
+const API_URL = process.env.REACT_APP_API_URL
 
+export const CHECK_USERNAME_URL = `${API_URL}/api/check_username`
 interface AddInventoryProps {
   handleClose: () => void
   //   onSubmit: (formData: AddInventoryItem) => void;
@@ -13,6 +15,7 @@ interface AddInventoryProps {
 const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
   const {setShouldFetchOrganisation} = useInventoryContext()
   const [phoneExtension, setPhoneExtension] = useState('+971')
+  const [allowSubmission, setAllowSubmission] = useState(false)
 
   const {auth} = useAuth()
   interface InitialValues {
@@ -62,11 +65,9 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
     staff_email: '',
     staff_superuser: true,
     staff_username: '',
-    staff_password: '',
+    staff_password: '321df6dsf8d',
     staff_confirm_password: '',
   }
-
-  const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{8,}$/
 
   const validationSchema = Yup.object({
     org_name: Yup.string().required('Organisation name Required'),
@@ -102,7 +103,24 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
     //   .required('Confirm password is required')
     //   .oneOf([Yup.ref('staff_password'), ''], 'Passwords must match'),
   })
-
+  const checkUsernameExists = async (username) => {
+    try {
+      const response = await fetch(`${CHECK_USERNAME_URL}?username=${username}`)
+      const data = await response.json()
+      return data.exists
+    } catch (error) {
+      console.error('Error checking username:', error)
+    }
+  }
+  const handleUsernameBlur = async (event, setFieldError) => {
+    const username = event.target.value
+    if (username) {
+      const exists = await checkUsernameExists(username)
+      if (exists) {
+        setFieldError('staff_username', 'Username already exists')
+      }
+    }
+  }
   const handleSubmit = async (values: InitialValues) => {
     const dataTosend = {
       organization: {
@@ -159,7 +177,7 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
     >
-      {({values, errors, touched}) => {
+      {({values, errors, setFieldError, handleBlur}) => {
         return (
           <Form>
             {/* Organization Section */}
@@ -424,6 +442,7 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
                   name='staff_username'
                   placeholder='Username'
                   className='form-control my-2'
+                  onBlur={(e) => handleUsernameBlur(e, setFieldError)}
                 />
                 <ErrorMessage name='staff_username' component='div' className='error-message' />
               </div>
@@ -455,7 +474,7 @@ const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
             {/* Submit Button */}
             <div className='row mt-2 mt-5'>
               <div className='form-group col-md-12 d-flex justify-content-center'>
-                <button type='submit' className='btn btn-primary'>
+                <button type='submit' disabled={allowSubmission} className='btn btn-primary'>
                   Submit
                 </button>
               </div>

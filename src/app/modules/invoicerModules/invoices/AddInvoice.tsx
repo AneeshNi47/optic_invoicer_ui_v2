@@ -65,7 +65,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           const responseData = await checkSubscription(auth.token)
           setSubscriptionDetails(responseData.data)
           setCreateInvoicePermission(responseData.data.create_invoice_permission)
-          console.log('create permission:', responseData.data.create_invoice_permission)
         } catch (error) {
           console.error('Error fetching API', error)
           // Handle error as needed
@@ -253,7 +252,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
     if (auth?.token && createInvoicePermission) {
       try {
-        console.log('submittni')
         const response = await addInvoiceService(auth?.token, invoiceData)
         if (response.status === 201) {
           toast.success('Invoice Added Successfully')
@@ -264,7 +262,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           handleClose.handleClose()
         }
       } catch (error: any) {
-        console.log(error)
         toast.error(error.response.data.error || 'Unable to add invoice')
         handleClose.handleClose()
       }
@@ -369,7 +366,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 }}
                 onInputChange={(inputValue) => {
                   setSearchInput((prevInput) => inputValue)
-                  console.log('Input Value:', inputValue)
                 }}
               />
             </div>
@@ -836,6 +832,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                     <tr className='fw-bold text-muted bg-light'>
                       <th className='min-w-200px'>Item name</th>
                       <th className='ps-4 min-w-125px'>Price</th>
+                      {formikProps.values.is_taxable ? (
+                        <th className='ps-4 min-w-125px'>Tax</th>
+                      ) : (
+                        ''
+                      )}
                       <th className='min-w-125px'>Quantity</th>
                       <th className='min-w-80px'>Action</th>
                     </tr>
@@ -856,6 +857,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                               </span>
                             </td>
                             <td>{element.sale_value}</td>
+                            {formikProps.values.is_taxable ? (
+                              <td className='ps-4 min-w-125px'>
+                                {element.sale_value * (tax_percentage / 100)}
+                              </td>
+                            ) : (
+                              ''
+                            )}
                             <td>
                               <div className='d-flex align-items-center'>
                                 <button
@@ -875,6 +883,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                                 </button>
                               </div>
                             </td>
+
                             <td>
                               <button
                                 className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-danger btn-sm me-1'
