@@ -2,30 +2,27 @@
 import React, {useEffect, useState, useRef} from 'react'
 import {KTIcon} from '../../../../_metronic/helpers'
 import {useAuth} from '../../auth'
-import {getInvoices} from './_requests'
-import {InvoiceModel} from './_models'
-import {InvoiceDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
-import {IndividualInvoice} from './_models'
-import {InvoicePaymentModal} from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
+import {getWholesaleOrders} from './_requests'
+import {WholesaleOrder, WholesaleOrders, WholesaleOrderDetail} from './_models'
 import {toast} from 'react-toastify'
 import {useCombinedContext} from '../CombinedProvider'
-import {formatDate, downloadInvoiceSlip} from '../utils'
+import {formatDate} from '../utils'
 
 type Props = {
   className: string
 }
 
-const InvoicesTable: React.FC<Props> = ({className}) => {
+const OrdersTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [invoices, setInvoices] = useState<InvoiceModel | any>({})
+  const [orders, setOrders] = useState<WholesaleOrders | any>({})
   const [showModal, setShowModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
-  const [modalContent, setModalContent] = useState<IndividualInvoice | any>({})
+  const [modalContent, setModalContent] = useState<WholesaleOrder | any>({})
   const [loading, setLoading] = useState(false)
-  const [dataToDisplay, setDataToDisplay] = useState<Array<IndividualInvoice> | any[]>([])
+  const [dataToDisplay, setDataToDisplay] = useState<Array<WholesaleOrder> | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
-  const {setShouldFetchInvoice, shouldFetchInvoice} = useCombinedContext()
   const containerRef = useRef<HTMLDivElement | null>(null)
+
   const handleOpenModal = (values) => {
     setShowModal(true)
     setModalContent(values)
@@ -44,18 +41,14 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     setShowPaymentModal(false)
   }
 
-  const fetchInvoiceData = async () => {
+  const fetchOrderData = async () => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInvoices(auth.token, invoices.next, 5, shouldFetchInvoice)
-        setInvoices((prev: any) => ({
+        setOrders((prev: any) => ({
           ...prev,
-          ...responseData.data,
         }))
         setLoading(false)
-
-        setDataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
@@ -63,22 +56,20 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     }
   }
 
-  const fileDownload = async (invoice) => {
+  const fileDownload = async (order) => {
     if (auth?.token) {
       setLoading(true)
-      downloadInvoiceSlip(invoice, auth.token)
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    if (initialLoad || setShouldFetchInvoice) {
+    if (initialLoad) {
       setDataToDisplay([])
-      fetchInvoiceData()
-      setShouldFetchInvoice(false)
+      fetchOrderData()
       setInitialLoad(false)
     }
-  }, [auth?.token, shouldFetchInvoice, initialLoad])
+  }, [auth?.token, initialLoad])
 
   useEffect(() => {
     const SCROLL_THRESHOLD = 10
@@ -89,8 +80,8 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
         containerRef.current.scrollTop + containerRef.current.clientHeight >=
           containerRef.current.scrollHeight - SCROLL_THRESHOLD
 
-      if (isScrollingDown && !loading && invoices.next) {
-        fetchInvoiceData()
+      if (isScrollingDown && !loading && orders.next) {
+        fetchOrderData()
       }
     }
 
@@ -107,16 +98,6 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
 
   return (
     <div className={`card ${className}`}>
-      <InvoiceDetailsModal
-        show={showModal}
-        handleClose={handleCloseModal}
-        modalContent={modalContent}
-      />
-      <InvoicePaymentModal
-        show={showPaymentModal}
-        handleClose={handlePaymentCloseModal}
-        modalContent={modalContent}
-      />
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
           <span className='card-label fw-bold fs-3 mb-1'>Recent Orders</span>
@@ -143,15 +124,15 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                     />
                   </div>
                 </th>
-                <th className='min-w-150px'>Customer</th>
-                <th className='min-w-120px'>Invoice No.</th>
-                <th className='min-w-120px'>Total</th>
+                <th className='min-w-150px'>Client</th>
+                <th className='min-w-120px'>Order No.</th>
+                <th className='min-w-120px'>Total Amount</th>
                 <th className='min-w-100px text-end'>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {invoices.results &&
-                dataToDisplay.map((invoice, index) => (
+              {orders.results &&
+                dataToDisplay.map((order, index) => (
                   <tr key={index}>
                     <td>
                       <div className='form-check form-check-sm form-check-custom form-check-solid'>
@@ -167,13 +148,13 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                         href='#'
                         className='text-dark fw-bold text-hover-primary fs-6'
                         onClick={() => {
-                          handleOpenModal(invoice)
+                          handleOpenModal(order)
                         }}
                       >
-                        {invoice.customer.first_name}
+                        {order.client.name}
                       </a>
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                        {formatDate(invoice.created_on)}
+                        {formatDate(order.order_date)}
                       </span>
                     </td>
                     <td>
@@ -181,29 +162,29 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                         href='#'
                         className='text-dark fw-bold text-hover-primary fs-6'
                         onClick={() => {
-                          handleOpenModal(invoice)
+                          handleOpenModal(order)
                         }}
                       >
-                        {invoice.invoice_number}
+                        {order.order_no}
                       </a>
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
                         <span
                           className={
-                            invoice.status === 'Created'
+                            order.order_status === 'Created'
                               ? 'badge badge-light-success'
-                              : invoice.status === 'Paid'
+                              : order.order_status === 'Completed'
                               ? 'badge badge-light-primary'
                               : 'badge badge-light-danger'
                           }
                         >
-                          {invoice.status}
+                          {order.order_status}
                         </span>
                       </span>
                     </td>
                     <td className='text-dark fw-bold text-hover-primary fs-6'>
-                      {invoice.total}
+                      {order.total_amount}
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                        Balance: {invoice.balance}
+                        Balance: {order.total_credit}
                       </span>{' '}
                     </td>
                     <td className='text-end'>
@@ -213,7 +194,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       <button
                         className='btn btn-icon btn-bg-light btn-color-warning btn-active-color-primary btn-sm me-1'
                         onClick={() => {
-                          handleOpenModal(invoice)
+                          handleOpenModal(order)
                         }}
                       >
                         <KTIcon iconName='eye' className='fs-3' />
@@ -221,7 +202,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       <a
                         className='btn btn-icon btn-bg-light btn-color-success btn-active-color-primary btn-sm me-1'
                         onClick={() => {
-                          handlePaymentOpenModal(invoice)
+                          handlePaymentOpenModal(order)
                         }}
                       >
                         <KTIcon iconName='dollar' className='fs-3' />
@@ -229,7 +210,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       <a
                         className='btn btn-icon btn-bg-light btn-color-dark  btn-active-color-primary btn-sm me-1'
                         onClick={() => {
-                          fileDownload(invoice)
+                          fileDownload(order)
                         }}
                       >
                         <KTIcon iconName='file-down' className='fs-3' />
@@ -247,4 +228,4 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   )
 }
 
-export {InvoicesTable}
+export {OrdersTable}

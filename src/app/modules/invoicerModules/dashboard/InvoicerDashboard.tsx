@@ -36,7 +36,6 @@ const DashboardPage = () => {
       setLoading(true)
       try {
         const responseData = await getOrganizations(auth.token)
-        console.log(responseData.data)
         setOrganisationItems((prev: any) => ({
           ...prev,
           ...responseData.data,

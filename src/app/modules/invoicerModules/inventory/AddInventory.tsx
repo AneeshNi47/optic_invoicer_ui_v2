@@ -8,14 +8,14 @@ import {toast} from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.min.css'
 import {checkSubscription} from '../invoices/_requests'
 import {SubscriptionResponse} from '../invoices/_models'
-import {useInventoryContext} from './InventoryProvider'
+import {useCombinedContext} from '../CombinedProvider'
 
 interface AddInventoryProps {
   handleClose: () => void
 }
 
 const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
-  const {setShouldFetchInventory} = useInventoryContext()
+  const {setShouldFetchInventory} = useCombinedContext()
   const {auth} = useAuth()
   const initialValues: AddInventoryItem = {
     item_type: 'Frames',

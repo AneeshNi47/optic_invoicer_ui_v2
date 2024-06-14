@@ -4,6 +4,9 @@ import {InvoicesTable} from './invoices/InvoicesTable'
 import {InventoryTable} from './inventory/InventoryTable'
 import {CustomerTable} from './customers/CustomerTable'
 import {ReportsDashboard} from './reports/ReportsDashboard'
+import {WholesaleInventoryTable} from './wholesaleInventory/WholesaleInventoryTable'
+import {WholesaleVendorTable} from './wholesaleVendors/WholesaleVendorTable'
+import {WholesaleClientTable} from './wholesaleClients/WholesaleClientTable'
 
 const widgetsBreadCrumbs: Array<PageLink> = [
   {
@@ -57,6 +60,33 @@ const InvoicePage = () => {
             <>
               <PageTitle breadcrumbs={widgetsBreadCrumbs}>Reports</PageTitle>
               <ReportsDashboard className='custom-list d-flex px-5 py-4' />
+            </>
+          }
+        />
+        <Route
+          path='wholesale-vendor'
+          element={
+            <>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Wholesale Vendor</PageTitle>
+              <WholesaleVendorTable className='custom-list d-flex px-5 py-4' />
+            </>
+          }
+        />
+        <Route
+          path='wholesale-inventory'
+          element={
+            <>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Wholesale Inventory</PageTitle>
+              <WholesaleInventoryTable className='custom-list d-flex px-5 py-4' />
+            </>
+          }
+        />
+        <Route
+          path='wholesale-clients'
+          element={
+            <>
+              <PageTitle breadcrumbs={widgetsBreadCrumbs}>Wholesale Clients</PageTitle>
+              <WholesaleClientTable className='custom-list d-flex px-5 py-4' />
             </>
           }
         />

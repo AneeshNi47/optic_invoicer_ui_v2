@@ -28,7 +28,9 @@ const PrivateRoutes = () => {
         <Route path='auth/*' element={<Navigate to='/dashboard' />} />
         {/* Pages */}
         {currentUser?.user_type === 'staff' ? (
-          <Route path='dashboard' element={<InvoiceDashboardWrapper />} />
+          <>
+            <Route path='dashboard' element={<InvoiceDashboardWrapper />} />
+          </>
         ) : (
           <Route path='dashboard' element={<AdminDashboardWrapper />} />
         )}

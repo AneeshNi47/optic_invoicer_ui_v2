@@ -118,3 +118,7 @@ export interface UserModel {
   address?: UserAddressModel
   socialNetworks?: UserSocialNetworksModel
 }
+
+export interface SuccessMessage {
+  message: string
+}

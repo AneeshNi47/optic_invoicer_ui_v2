@@ -1,13 +1,12 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useState, useEffect, useRef} from 'react'
-import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
+import {KTIcon} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
 import {getOrganisations} from './_requests'
-import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {OrganisationModel} from './_models'
 import {toast} from 'react-toastify'
-import {useInventoryContext} from '../../invoicerModules/inventory/InventoryProvider'
+import {useCombinedContext} from '../../invoicerModules/CombinedProvider'
 
 type Props = {
   className: string
@@ -21,18 +20,9 @@ const OrganizationsTable: React.FC<Props> = ({className}) => {
   const [loading, setLoading] = useState(false)
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
 
-  const {setShouldFetchOrganisation, shouldFetchOrganisation} = useInventoryContext()
+  const {setShouldFetchOrganisation, shouldFetchOrganisation} = useCombinedContext()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
-
-  const handleOpenModal = (values) => {
-    setShowModal(true)
-    setModalContent(values)
-  }
-
-  const handleCloseModal = () => {
-    setShowModal(false)
-  }
 
   const fetchInventoryData = async () => {
     if (auth?.token) {

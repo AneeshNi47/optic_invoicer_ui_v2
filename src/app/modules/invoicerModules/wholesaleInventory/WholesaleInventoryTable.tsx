@@ -3,25 +3,27 @@ import React, {useState, useEffect, useRef} from 'react'
 import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
-import {getInventoryItems} from './_requests'
+import {getWholesaleInventoryItems} from './_requests'
 import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
-import {InventoryItem, InventoryItems} from './_models'
+import {WholeSaleInventoryItems, WholeSaleInventoryItem} from './_models'
 import {toast} from 'react-toastify'
-
+import {CreateInvoiceModal} from '../../../../_metronic/partials'
 import {useCombinedContext} from '../CombinedProvider'
-
 type Props = {
   className: string
 }
 
-const InventoryTable: React.FC<Props> = ({className}) => {
+const WholesaleInventoryTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [inventoryItems, setInventoryItems] = useState<InventoryItems | any>({})
+  const [inventoryItems, setInventoryItems] = useState<WholeSaleInventoryItems | any>({})
   const [showModal, setShowModal] = useState(false)
-  const [modalContent, setModalContent] = useState<InventoryItem | any>({})
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addModal, setAddModal] = useState(false)
+  const [modalContent, setModalContent] = useState<WholeSaleInventoryItem | any>({})
   const [loading, setLoading] = useState(false)
-  const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
+  const [dataToDisplay, setDataToDisplay] = useState<WholeSaleInventoryItem[] | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
+
   const {shouldFetchInventory, setShouldFetchInventory} = useCombinedContext()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -35,11 +37,19 @@ const InventoryTable: React.FC<Props> = ({className}) => {
     setShowModal(false)
   }
 
+  const handleOpenAddModal = (modalValue) => {
+    setAddModal(modalValue)
+    setShowAddModal(true)
+  }
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false)
+  }
   const fetchInventoryData = async () => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInventoryItems(
+        const responseData = await getWholesaleInventoryItems(
           auth.token,
           inventoryItems.next,
           5,
@@ -105,6 +115,11 @@ const InventoryTable: React.FC<Props> = ({className}) => {
         handleClose={handleCloseModal}
         modalContent={modalContent}
       />
+      <CreateInvoiceModal
+        show={showAddModal}
+        handleClose={handleCloseAddModal}
+        modalName={`${addModal}`}
+      />
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
@@ -128,6 +143,9 @@ const InventoryTable: React.FC<Props> = ({className}) => {
             data-kt-menu-trigger='click'
             data-kt-menu-placement='bottom-end'
             data-kt-menu-flip='top-end'
+            onClick={() => {
+              handleOpenAddModal('wholesale-inventory')
+            }}
           >
             <KTIcon iconName='plus' className='fs-2' />
           </button>
@@ -159,6 +177,12 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                 <th className='p-0 min-w-125px'>
                   <h4>Cost Value</h4>
                 </th>
+                <th className='p-0 min-w-125px'>
+                  <h4>Selling Price 1</h4>
+                </th>
+                <th className='p-0 min-w-125px'>
+                  <h4>Reorder Quantity</h4>
+                </th>
                 <th className='p-0 min-w-90px'>
                   <h4>Quantity</h4>
                 </th>
@@ -171,7 +195,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
             {/* begin::Table body */}
             <tbody>
               {inventoryItems.results &&
-                dataTodisplay.map((item, index) => (
+                dataToDisplay.map((item, index) => (
                   <tr key={index}>
                     <td>
                       <div className='symbol symbol-50px me-2'>
@@ -192,7 +216,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                           handleOpenModal(item)
                         }}
                       >
-                        {item.name}
+                        {item.item_name}
                       </a>
                       <span className='text-muted fw-semibold d-block fs-7'>{item.item_type}</span>
                     </td>
@@ -202,7 +226,13 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                       </span>
                     </td>
                     <td className='text-start'>
-                      <span className='text-muted fw-semibold'>{item.cost_value}</span>
+                      <span className='text-muted fw-semibold'>{item.std_cost}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>{item.selling_price_1}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>{item.re_order_qty}</span>
                     </td>
                     <td className='text-start'>
                       <span className='text-muted fw-semibold'>{item.qty}</span>
@@ -234,4 +264,4 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   )
 }
 
-export {InventoryTable}
+export {WholesaleInventoryTable}

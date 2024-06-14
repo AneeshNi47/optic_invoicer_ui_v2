@@ -4,7 +4,8 @@ import * as Yup from 'yup'
 import {useAuth} from '../../auth'
 import {addOrganisation} from './_requests'
 import {toast} from 'react-toastify'
-import {useInventoryContext} from '../../invoicerModules/inventory/InventoryProvider'
+import {useCombinedContext} from '../../invoicerModules/CombinedProvider'
+
 const API_URL = process.env.REACT_APP_API_URL
 
 export const CHECK_USERNAME_URL = `${API_URL}/api/check_username`
@@ -13,7 +14,7 @@ interface AddInventoryProps {
   //   onSubmit: (formData: AddInventoryItem) => void;
 }
 const AddInventory: React.FC<AddInventoryProps> = (handleClose) => {
-  const {setShouldFetchOrganisation} = useInventoryContext()
+  const {setShouldFetchOrganisation} = useCombinedContext()
   const [phoneExtension, setPhoneExtension] = useState('+971')
   const [allowSubmission, setAllowSubmission] = useState(false)
 

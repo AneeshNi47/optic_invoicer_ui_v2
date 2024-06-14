@@ -3,7 +3,7 @@ import * as Yup from 'yup'
 import clsx from 'clsx'
 import {Link} from 'react-router-dom'
 import {useFormik} from 'formik'
-import {requestPassword} from '../core/_requests'
+import {resetPassword} from '../core/_requests'
 
 const initialValues = {
   email: 'admin@demo.com',
@@ -27,8 +27,9 @@ export function ForgotPassword() {
       setLoading(true)
       setHasErrors(undefined)
       setTimeout(() => {
-        requestPassword(values.email)
-          .then(({data: {result}}) => {
+        resetPassword(values.email)
+          .then(({data: {message}}) => {
+            console.log(message)
             setHasErrors(false)
             setLoading(false)
           })

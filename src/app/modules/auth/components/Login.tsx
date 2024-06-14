@@ -7,6 +7,8 @@ import {useFormik} from 'formik'
 import {getUserByToken, login} from '../core/_requests'
 import {useAuth} from '../core/Auth'
 import {toast} from 'react-toastify'
+import {check} from 'prettier'
+import {KTIcon} from '../../../../_metronic/helpers'
 
 const loginSchema = Yup.object().shape({
   username: Yup.string()
@@ -25,6 +27,7 @@ const initialValues = {
 }
 
 export function Login() {
+  const [viewPassword, setViewPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const {saveAuth, setCurrentUser} = useAuth()
 
@@ -87,7 +90,7 @@ export function Login() {
       <div className='fv-row mb-3'>
         <label className='form-label fw-bolder text-dark fs-6 mb-0'>Password</label>
         <input
-          type='password'
+          type={viewPassword ? 'text' : 'password'}
           autoComplete='off'
           {...formik.getFieldProps('password')}
           className={clsx(
@@ -107,6 +110,16 @@ export function Login() {
             </div>
           </div>
         )}
+      </div>
+      <div className='fv-row mb-1'>
+        <label className='form-label fw-bolder text-dark fs-6 mb-0'>
+          <KTIcon iconName='eye' />
+        </label>
+        <input
+          type='checkbox'
+          checked={viewPassword}
+          onChange={() => setViewPassword(!viewPassword)}
+        />
       </div>
       {/* end::Form group */}
 

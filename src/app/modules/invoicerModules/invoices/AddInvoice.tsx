@@ -13,7 +13,7 @@ import {
 } from './_requests'
 import Swal from 'sweetalert2'
 import {toast} from 'react-toastify'
-import {useInventoryContext} from '../inventory/InventoryProvider'
+import {useCombinedContext} from '../CombinedProvider'
 import {formatDate, PrescriptionTable, prescriptionCorrector} from '../utils'
 
 interface AddInvoiceProps {
@@ -45,7 +45,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionResponse | any>({})
   const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
 
-  const {setShouldFetchInvoice} = useInventoryContext()
+  const {setShouldFetchInvoice} = useCombinedContext()
 
   const handleRemoveItem = (itemId) => {
     setSelectedInventoryOption((prevOptions) => {

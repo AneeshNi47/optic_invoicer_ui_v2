@@ -3,30 +3,32 @@ import React, {useState, useEffect, useRef} from 'react'
 import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
 import {Dropdown1} from '../../../../_metronic/partials'
 import {useAuth} from '../../auth'
-import {getInventoryItems} from './_requests'
-import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
-import {InventoryItem, InventoryItems} from './_models'
+import {getWholesaleClientItems} from './_requests'
+import {WholeSaleClient, WholeSaleClients} from './_models'
 import {toast} from 'react-toastify'
-
+import {CreateInvoiceModal} from '../../../../_metronic/partials'
 import {useCombinedContext} from '../CombinedProvider'
 
 type Props = {
   className: string
 }
 
-const InventoryTable: React.FC<Props> = ({className}) => {
+const WholesaleClientTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
-  const [inventoryItems, setInventoryItems] = useState<InventoryItems | any>({})
+  const [clientItems, setClientItems] = useState<WholeSaleClients | any>({})
   const [showModal, setShowModal] = useState(false)
-  const [modalContent, setModalContent] = useState<InventoryItem | any>({})
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [addModal, setAddModal] = useState(false)
+  const [modalContent, setModalContent] = useState<WholeSaleClient | any>({})
   const [loading, setLoading] = useState(false)
-  const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
+  const [dataToDisplay, setDataToDisplay] = useState<WholeSaleClient[] | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
+
   const {shouldFetchInventory, setShouldFetchInventory} = useCombinedContext()
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
-  const handleOpenModal = (values) => {
+  const handleOpenModal = (values: WholeSaleClient) => {
     setShowModal(true)
     setModalContent(values)
   }
@@ -35,17 +37,27 @@ const InventoryTable: React.FC<Props> = ({className}) => {
     setShowModal(false)
   }
 
-  const fetchInventoryData = async () => {
+  const handleOpenAddModal = (modalValue) => {
+    setAddModal(modalValue)
+    setShowAddModal(true)
+  }
+
+  const handleCloseAddModal = () => {
+    setShowAddModal(false)
+  }
+
+  const fetchClientData = async () => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInventoryItems(
+        const responseData = await getWholesaleClientItems(
           auth.token,
-          inventoryItems.next,
+          clientItems.next,
           5,
           shouldFetchInventory
         )
-        setInventoryItems((prev: any) => ({
+        console.log(responseData.data)
+        setClientItems((prev: any) => ({
           ...prev,
           ...responseData.data,
         }))
@@ -62,7 +74,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   useEffect(() => {
     if (initialLoad || shouldFetchInventory) {
       setDataToDisplay([])
-      fetchInventoryData()
+      fetchClientData()
       setShouldFetchInventory(false)
       setInitialLoad(false)
     }
@@ -79,11 +91,8 @@ const InventoryTable: React.FC<Props> = ({className}) => {
         containerRef.current.scrollTop + containerRef.current.clientHeight >=
           containerRef.current.scrollHeight - SCROLL_THRESHOLD
 
-      // if (isScrollingUp && !loading) {
-      //   fetchInventoryData();
-      // }
-      if (isScrollingDown && !loading && inventoryItems.next) {
-        fetchInventoryData()
+      if (isScrollingDown && !loading && clientItems.next) {
+        fetchClientData()
       }
     }
 
@@ -100,16 +109,16 @@ const InventoryTable: React.FC<Props> = ({className}) => {
 
   return (
     <div className={`card ${className}`}>
-      <InventoryDetailsModal
-        show={showModal}
-        handleClose={handleCloseModal}
-        modalContent={modalContent}
+      <CreateInvoiceModal
+        show={showAddModal}
+        handleClose={handleCloseAddModal}
+        modalName={`${addModal}`}
       />
       {/* begin::Header */}
       <div className='card-header border-0 pt-5'>
         <h3 className='card-title align-items-start flex-column'>
-          <span className='card-label fw-bold fs-3 mb-1'>Latest Arrivals</span>
-          <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new products</span>
+          <span className='card-label fw-bold fs-3 mb-1'>Latest Clients</span>
+          <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new clients</span>
         </h3>
         <div className='card-toolbar'>
           {/* begin::Menu */}
@@ -128,6 +137,9 @@ const InventoryTable: React.FC<Props> = ({className}) => {
             data-kt-menu-trigger='click'
             data-kt-menu-placement='bottom-end'
             data-kt-menu-flip='top-end'
+            onClick={() => {
+              handleOpenAddModal('wholesale-client')
+            }}
           >
             <KTIcon iconName='plus' className='fs-2' />
           </button>
@@ -154,13 +166,19 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                   <h4>Name</h4>
                 </th>
                 <th className='p-0 min-w-120px'>
-                  <h4>Brand</h4>
+                  <h4>Country</h4>
                 </th>
                 <th className='p-0 min-w-125px'>
-                  <h4>Cost Value</h4>
+                  <h4>Email</h4>
+                </th>
+                <th className='p-0 min-w-125px'>
+                  <h4>Phone</h4>
+                </th>
+                <th className='p-0 min-w-125px'>
+                  <h4>Total Orders</h4>
                 </th>
                 <th className='p-0 min-w-90px'>
-                  <h4>Quantity</h4>
+                  <h4>Total Credit</h4>
                 </th>
                 <th className='p-0 min-w-50px'>
                   <h4>Info</h4>
@@ -170,8 +188,8 @@ const InventoryTable: React.FC<Props> = ({className}) => {
             {/* end::Table head */}
             {/* begin::Table body */}
             <tbody>
-              {inventoryItems.results &&
-                dataTodisplay.map((item, index) => (
+              {clientItems.results &&
+                dataToDisplay.map((item, index) => (
                   <tr key={index}>
                     <td>
                       <div className='symbol symbol-50px me-2'>
@@ -194,18 +212,26 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                       >
                         {item.name}
                       </a>
-                      <span className='text-muted fw-semibold d-block fs-7'>{item.item_type}</span>
-                    </td>
-                    <td className='text-start'>
-                      <span className='badge badge-light-danger fw-semibold me-1'>
-                        <h5>{item.brand}</h5>
+                      <span className='text-muted fw-semibold d-block fs-7'>
+                        {item.contact_person}
                       </span>
                     </td>
                     <td className='text-start'>
-                      <span className='text-muted fw-semibold'>{item.cost_value}</span>
+                      <span className='badge badge-light-danger fw-semibold me-1'>
+                        <h5>{item.country}</h5>
+                      </span>
                     </td>
                     <td className='text-start'>
-                      <span className='text-muted fw-semibold'>{item.qty}</span>
+                      <span className='text-muted fw-semibold'>{item.email}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>{item.phone}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>{item.total_orders}</span>
+                    </td>
+                    <td className='text-start'>
+                      <span className='text-muted fw-semibold'>{item.total_credit}</span>
                     </td>
                     <td className='text-start'>
                       <a
@@ -234,4 +260,4 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   )
 }
 
-export {InventoryTable}
+export {WholesaleClientTable}
