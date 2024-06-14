@@ -10,7 +10,6 @@ const Topbar: FC = () => {
   const [showModal, setShowModal] = useState(false)
   const [modal, setModal] = useState('')
   const {currentUser} = useAuth()
-  console.log(currentUser)
 
   const handleOpenModal = (modalValue) => {
     setModal(modalValue)

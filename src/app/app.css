@@ -1,3 +1,7 @@
 .error-message {
-    color: red;
+  color: red;
+}
+
+.svg-icon-color {
+  filter: invert(38%) sepia(74%) saturate(5076%) hue-rotate(346deg) brightness(95%) contrast(110%);
 }

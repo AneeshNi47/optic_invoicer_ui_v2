@@ -5,29 +5,28 @@ import {LayoutProvider, LayoutSplashScreen} from '../_metronic/layout/core'
 import {MasterInit} from '../_metronic/layout/MasterInit'
 import {AuthInit} from './modules/auth'
 import {ThemeModeProvider} from '../_metronic/partials'
-import { ToastContainer } from "react-toastify";
-import { InventoryProvider } from './modules/invoicerModules/inventory/InventoryProvider'
+import {ToastContainer} from 'react-toastify'
+import {CombinedProvider} from './modules/invoicerModules/CombinedProvider'
 import './app.css'
-
 
 const App = () => {
   return (
     <>
-    <Suspense fallback={<LayoutSplashScreen />}>
-      <I18nProvider>
-        <InventoryProvider>
-        <LayoutProvider>
-          <ThemeModeProvider>
-            <AuthInit>
-              <Outlet />
-              <MasterInit />
-            </AuthInit>
-          </ThemeModeProvider>
-        </LayoutProvider>
-      </InventoryProvider>  
-      </I18nProvider>
-    </Suspense>
-    <ToastContainer position="bottom-right" />
+      <Suspense fallback={<LayoutSplashScreen />}>
+        <I18nProvider>
+          <CombinedProvider>
+            <LayoutProvider>
+              <ThemeModeProvider>
+                <AuthInit>
+                  <Outlet />
+                  <MasterInit />
+                </AuthInit>
+              </ThemeModeProvider>
+            </LayoutProvider>
+          </CombinedProvider>
+        </I18nProvider>
+      </Suspense>
+      <ToastContainer position='bottom-right' />
     </>
   )
 }

@@ -3,12 +3,12 @@ import {FC} from 'react'
 import {AuthorsTab} from './AuthorsTab'
 import {MenuTab} from './MenuTab'
 import {NotificationsTab} from './NotificationsTab'
-import {ProjectsTab} from './ProjectsTab'
 import {SubscriptionsTab} from './SubscriptionsTab'
 import {TasksTab} from './TasksTab'
 import {AsideFooter} from '../AsideFooter'
 import {AdminTab} from './AdminTab'
 import {StaffTab} from './StaffTab'
+import {WholeSaleTab} from './WholeSaleTab'
 
 type Props = {
   link: string
@@ -20,6 +20,8 @@ const SelectedTab: FC<Props> = ({link}) => {
       return <AdminTab />
     case 'staff':
       return <StaffTab />
+    case 'wholesale':
+      return <WholeSaleTab />
     case 'menu':
       return <MenuTab />
     case 'subscription':
