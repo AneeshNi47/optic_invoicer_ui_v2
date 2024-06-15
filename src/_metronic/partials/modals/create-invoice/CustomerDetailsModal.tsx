@@ -22,7 +22,7 @@ const CustomerDetailsModal: React.FC<Props> = ({show, handleClose, modalContent}
   const {auth} = useAuth()
 
   const fetchIndividualCustomerData = async (modalContent) => {
-    if (auth?.token) {
+    if (auth?.token &&modalContent.id) {
       try {
         const responseData = await getCustomerObject(auth.token, modalContent.id)
         setSelectedCustomer(responseData.data)

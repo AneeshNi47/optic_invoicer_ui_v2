@@ -19,10 +19,11 @@ const InvoiceDetailsModal: React.FC<Props> = ({show, handleClose, modalContent})
   const {auth} = useAuth()
 
   const fetchIndividualCustomerData = async (modalContent) => {
-    if (auth?.token) {
+    if (auth?.token &&modalContent.id) {
       try {
+        console.log(modalContent)
         const responseData = await getInvoiceObject(auth.token, modalContent.id)
-        setSelectedInvoice(responseData.data)
+        setSelectedInvoice(responseData.data) 
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)

@@ -39,3 +39,8 @@ export interface AddInventoryItem {
   cost_value: number
   brand: string
 }
+
+export interface UpdateInventoryQty {
+  qty: number
+
+}

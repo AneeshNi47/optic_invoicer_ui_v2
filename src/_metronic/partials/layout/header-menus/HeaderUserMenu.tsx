@@ -3,7 +3,6 @@ import {FC} from 'react'
 import {Link} from 'react-router-dom'
 import {useAuth} from '../../../../app/modules/auth'
 import {Languages} from './Languages'
-import {toAbsoluteUrl} from '../../../helpers'
 
 const HeaderUserMenu: FC = () => {
   const {currentUser, logout} = useAuth()
@@ -23,7 +22,7 @@ const HeaderUserMenu: FC = () => {
               {currentUser?.staff_details?.first_name} {currentUser?.staff_details?.last_name}
             </div>
             <a href='#' className='fw-bold text-muted text-hover-primary fs-7'>
-              {currentUser?.email}
+              {currentUser?.staff_details.organization.name}
             </a>
           </div>
         </div>

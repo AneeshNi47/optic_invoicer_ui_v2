@@ -7,6 +7,7 @@ import {getInventoryItems} from './_requests'
 import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
 import {InventoryItem, InventoryItems} from './_models'
 import {toast} from 'react-toastify'
+import  UpdateInventoryQtyForm from './UpdateInventoryQtyForm'
 
 import {useCombinedContext} from '../CombinedProvider'
 
@@ -18,6 +19,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   const {auth} = useAuth()
   const [inventoryItems, setInventoryItems] = useState<InventoryItems | any>({})
   const [showModal, setShowModal] = useState(false)
+  const [showQtyModal, setShowQtyModal] = useState(false)
   const [modalContent, setModalContent] = useState<InventoryItem | any>({})
   const [loading, setLoading] = useState(false)
   const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
@@ -35,6 +37,14 @@ const InventoryTable: React.FC<Props> = ({className}) => {
     setShowModal(false)
   }
 
+  const handleOpenQtyModal = (values) => {
+    setShowQtyModal(true)
+    setModalContent(values)
+  }
+
+  const handleCloseQtyModal = () => {
+    setShowQtyModal(false)
+  }
   const fetchInventoryData = async () => {
     if (auth?.token) {
       setLoading(true)
@@ -103,6 +113,11 @@ const InventoryTable: React.FC<Props> = ({className}) => {
       <InventoryDetailsModal
         show={showModal}
         handleClose={handleCloseModal}
+        modalContent={modalContent}
+      />
+      <UpdateInventoryQtyForm
+        show={showQtyModal}
+        handleClose={handleCloseQtyModal}
         modalContent={modalContent}
       />
       {/* begin::Header */}
@@ -208,6 +223,15 @@ const InventoryTable: React.FC<Props> = ({className}) => {
                       <span className='text-muted fw-semibold'>{item.qty}</span>
                     </td>
                     <td className='text-start'>
+                      <a
+                        href='#'
+                        className='btn btn-sm btn-icon btn-bg-light btn-active-color-primary'
+                        onClick={() => {
+                          handleOpenQtyModal(item)
+                        }}
+                      >
+                        <KTIcon iconName='pencil' className='fs-2' />
+                      </a>
                       <a
                         href='#'
                         className='btn btn-sm btn-icon btn-bg-light btn-active-color-primary'

@@ -27,8 +27,10 @@ export function getInvoices(token: string, next: string, page: number, initialLo
   }
   if (next && !initialLoad) {
     return axios.get<InvoiceModel[]>(`${next}`, {headers})
+  }else{
+
+    return axios.get<InvoiceModel>(`${GET_INVOICES_URL}/?page_size=${page}`, {headers})
   }
-  return axios.get<InvoiceModel>(`${GET_INVOICES_URL}/?page_size=${page}`, {headers})
 }
 
 // Server should return InvoiceModelObject
@@ -37,6 +39,7 @@ export function getInvoiceObject(token: string, id: string) {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
+  console.log('id', id) 
   return axios.get<IndividualInvoice>(`${GET_INVOICES_URL}/${id}`, {headers})
 }
 
