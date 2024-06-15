@@ -21,7 +21,7 @@ interface AddInvoiceProps {
   handleClose: () => void
 }
 
-const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
+const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
   interface CustomerDetails {
     phone: string
     email: string
@@ -29,6 +29,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     last_name: string
     gender: string
   }
+
   const [searchInput, setSearchInput] = useState('')
   const [selectedOption, setSelectedOption] = useState<CustomerDetails | any>({})
   const [customerFieldDisable, setCustomerFieldDisable] = useState(false)
@@ -46,7 +47,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
   const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
 
   const {setShouldFetchInvoice} = useCombinedContext()
-
+  const {auth} = useAuth()
   const handleRemoveItem = (itemId) => {
     setSelectedInventoryOption((prevOptions) => {
       const updatedOptions = prevOptions.filter((element) => element.id !== itemId)
@@ -73,7 +74,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
       fetchApi()
     }
-  }, [])
+  }, [auth?.token])
 
   useEffect(() => {
     const total = calculateTotal()
@@ -132,7 +133,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     })
   }
 
-  const {auth} = useAuth()
   const initialValues: any = {
     phone: '',
     email: '',
@@ -182,9 +182,9 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
 
   const validationSchema = Yup.object().shape({
     phone: Yup.string().required('Phone is required'),
-    email: Yup.string().email('Invalid email').required('Email is required'),
+    email: Yup.string().email('Invalid email'),
     first_name: Yup.string().required('First name is required'),
-    last_name: Yup.string().required('Last name is required'),
+    last_name: Yup.string(),
     gender: Yup.string().required('Gender is required'),
     left_sphere: numberOrNaNValidation('Left Sphere', -20, 20),
     right_sphere: numberOrNaNValidation('Right Sphere', -20, 20),
@@ -208,7 +208,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
     tax_percentage: Yup.string(),
   })
 
-  const handleSubmit = async (values) => {
+  const handleSubmit = async (values, {setSubmitting}) => {
     const inventoryItems = Object.entries(itemQuantities).map(([inventory_item, quantity]) => ({
       inventory_item: Number(inventory_item), // Convert the key to a number if needed
       quantity: quantity || 1, // Use 0 if quantity is undefined
@@ -256,14 +256,16 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
         if (response.status === 201) {
           toast.success('Invoice Added Successfully')
           setShouldFetchInvoice(true)
-          handleClose.handleClose()
+          handleClose()
         } else {
           toast.error('Unable to add Invoice')
-          handleClose.handleClose()
+          handleClose()
         }
       } catch (error: any) {
         toast.error(error.response.data.error || 'Unable to add invoice')
-        handleClose.handleClose()
+        handleClose()
+      } finally {
+        setSubmitting(false)
       }
     }
   }
@@ -299,9 +301,10 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           response &&
           response.data &&
           response.data.results.map((inventory) => ({
-            label: `${inventory.name}`,
+            label: `${inventory.name} - ${inventory.qty === 0 ? "No stock Available" : ""}`,
             availability: inventory.qty === 0 ? false : true,
             value: inventory,
+            isDisabled: inventory.qty === 0 ? true : false,
           }))
         return options
       }
@@ -349,7 +352,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                 loadOptions={(inputValue) => loadOptions(inputValue)}
                 defaultOptions
                 onChange={(selectedOption: any | {}) => {
-                  // Set form values based on the selected customer
                   formikProps.setValues({
                     ...formikProps.values,
                     phone: selectedOption?.value?.phone || '',
@@ -360,7 +362,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                     id: selectedOption?.value?.id || '',
                   })
 
-                  // Update the state with the selected option
                   setSelectedOption({...selectedOption.value})
                   setCustomerFieldDisable(true)
                 }}
@@ -832,17 +833,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                     <tr className='fw-bold text-muted bg-light'>
                       <th className='min-w-200px'>Item name</th>
                       <th className='ps-4 min-w-125px'>Price</th>
-                      {formikProps.values.is_taxable ? (
+                      {formikProps.values.is_taxable && (
                         <th className='ps-4 min-w-125px'>Tax</th>
-                      ) : (
-                        ''
                       )}
                       <th className='min-w-125px'>Quantity</th>
                       <th className='min-w-80px'>Action</th>
                     </tr>
                   </thead>
-                  {/* end::Table head */}
-                  {/* begin::Table body */}
                   <tbody>
                     {selectedInventoryOption.length > 0 &&
                       selectedInventoryOption.map((element) => {
@@ -857,12 +854,10 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
                               </span>
                             </td>
                             <td>{element.sale_value}</td>
-                            {formikProps.values.is_taxable ? (
+                            {formikProps.values.is_taxable && (
                               <td className='ps-4 min-w-125px'>
                                 {element.sale_value * (tax_percentage / 100)}
                               </td>
-                            ) : (
-                              ''
                             )}
                             <td>
                               <div className='d-flex align-items-center'>
@@ -1018,7 +1013,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = (handleClose) => {
           </div>
           <div className='row mt-12'>
             <div className='form-group col-md-12 d-flex justify-content-center'>
-              <button disabled={!createInvoicePermission} type='submit' className='btn btn-primary'>
+              <button
+                disabled={formikProps.isSubmitting || !createInvoicePermission}
+                type='submit'
+                className='btn btn-primary'
+              >
                 Submit
               </button>
             </div>

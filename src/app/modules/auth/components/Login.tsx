@@ -40,11 +40,9 @@ export function Login() {
         const {data: auth} = await login(values.username, values.password)
         saveAuth(auth)
         const {data: user} = await getUserByToken(auth.token)
-        console.log(user)
         setCurrentUser(user)
         toast.success('logged in successfully')
       } catch (error) {
-        console.error(error)
         saveAuth(undefined)
         setStatus('The login details are incorrect')
         setSubmitting(false)
