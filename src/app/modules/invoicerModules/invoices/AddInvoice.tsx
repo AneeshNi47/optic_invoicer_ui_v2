@@ -216,7 +216,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     const invoiceData: any = {
       customer: {
         phone: values.phone,
-        email: values.email,
+        email: values.email === "" ? null : values.email,
         first_name: values.first_name,
         last_name: values.last_name,
         gender: values.gender,
