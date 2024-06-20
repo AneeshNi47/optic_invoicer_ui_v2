@@ -157,68 +157,23 @@ const InvoiceDetailsModal: React.FC<Props> = ({show, handleClose, modalContent})
                 <thead>
                   <tr className='fw-bold text-muted bg-light'>
                     <th className='ps-4 min-w-125px'>Direction</th>
-                    <th className='ps-4 min-w-125px rounded-start'>Add</th>
-                    <th className='min-w-125px'>Axis</th>
-                    <th className='min-w-125px'>Cylinder</th>
-                    <th className='min-w-125px'>IPD</th>
-                    <th className='min-w-125px'>Prism</th>
-                    <th className='ps-4 min-w-125px'>Sphere</th>
+                    <th className='ps-4 min-w-125px rounded-start'>SPH</th>
+                    <th className='min-w-125px'>CYL</th>
+                    <th className='min-w-125px'>AXIS</th>
+                    <th className='min-w-125px'>PRISM</th>
+                    <th className='min-w-125px'>ADD</th>
+                    <th className='ps-4 min-w-125px'>IPD</th>
                   </tr>
                 </thead>
                 {/* end::Table head */}
                 {/* begin::Table body */}
                 <tbody>
                   <tr>
-                    <td>Left</td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_add) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_axis) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_cylinder) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_ipd) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_prism) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.left_sphere) ||
-                        '-'}
-                    </td>
-                  </tr>
-                  <tr>
                     <td>Right</td>
                     <td>
                       {(selectedInvoice &&
                         selectedInvoice.prescription &&
-                        selectedInvoice.prescription.right_add) ||
-                        '-'}
-                    </td>
-                    <td>
-                      {(selectedInvoice &&
-                        selectedInvoice.prescription &&
-                        selectedInvoice.prescription.right_axis) ||
+                        selectedInvoice.prescription.right_sphere) ||
                         '-'}
                     </td>
                     <td>
@@ -230,7 +185,7 @@ const InvoiceDetailsModal: React.FC<Props> = ({show, handleClose, modalContent})
                     <td>
                       {(selectedInvoice &&
                         selectedInvoice.prescription &&
-                        selectedInvoice.prescription.right_ipd) ||
+                        selectedInvoice.prescription.right_axis) ||
                         '-'}
                     </td>
                     <td>
@@ -242,7 +197,52 @@ const InvoiceDetailsModal: React.FC<Props> = ({show, handleClose, modalContent})
                     <td>
                       {(selectedInvoice &&
                         selectedInvoice.prescription &&
-                        selectedInvoice.prescription.right_sphere) ||
+                        selectedInvoice.prescription.right_add) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.right_ipd) ||
+                        '-'}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Left</td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_sphere) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_cylinder) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_axis) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_prism) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_add) ||
+                        '-'}
+                    </td>
+                    <td>
+                      {(selectedInvoice &&
+                        selectedInvoice.prescription &&
+                        selectedInvoice.prescription.left_ipd) ||
                         '-'}
                     </td>
                   </tr>
