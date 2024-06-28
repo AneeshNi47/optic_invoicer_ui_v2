@@ -54,6 +54,7 @@ const StatisticsWidget4: React.FC<Props> = ({
         field_title
       )
     )
+
     if (chart) {
       chart.render()
     }
