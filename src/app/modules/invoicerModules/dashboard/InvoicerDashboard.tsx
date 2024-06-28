@@ -66,6 +66,7 @@ const DashboardPage = () => {
   }
 
   useEffect(() => {
+
     const processedInvoiceStats = processStatistics(
       organizationItems.invoice_statistics,
       getMonthByNumbers
@@ -83,6 +84,8 @@ const DashboardPage = () => {
       organizationItems.customer_statistics,
       getMonthByNumbers
     )
+    console.log(processedCustomerStats.dataValues)
+    console.log(processedCustomerStats.dataKeys)
     setCustomerDataValues(processedCustomerStats.dataValues)
     setCustomerDataKeys(processedCustomerStats.dataKeys)
   }, [organizationItems])

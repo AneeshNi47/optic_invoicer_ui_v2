@@ -38,6 +38,7 @@ const DashboardPage = () => {
       <div className='row gy-5 g-xl-8'>
         {/* begin::Col */}
         <div className='col-xxl-4'>
+          asdasdasdasd
           <MixedWidget3
             className='card-xl-stretch mb-xl-8'
             chartColor='primary'

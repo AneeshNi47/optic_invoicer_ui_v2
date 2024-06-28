@@ -1,14 +1,14 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import {useState} from 'react'
+import { useState } from 'react'
 import * as Yup from 'yup'
 import clsx from 'clsx'
-import {Link} from 'react-router-dom'
-import {useFormik} from 'formik'
-import {getUserByToken, login} from '../core/_requests'
-import {useAuth} from '../core/Auth'
-import {toast} from 'react-toastify'
-import {check} from 'prettier'
-import {KTIcon} from '../../../../_metronic/helpers'
+import { Link } from 'react-router-dom'
+import { useFormik } from 'formik'
+import axios from 'axios'
+import { getUserByToken, login } from '../core/_requests'
+import { useAuth } from '../core/Auth'
+import { toast } from 'react-toastify'
+import { KTIcon } from '../../../../_metronic/helpers'
 
 const loginSchema = Yup.object().shape({
   username: Yup.string()
@@ -29,28 +29,50 @@ const initialValues = {
 export function Login() {
   const [viewPassword, setViewPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const {saveAuth, setCurrentUser} = useAuth()
+  const { saveAuth, setCurrentUser } = useAuth()
 
   const formik = useFormik({
     initialValues,
     validationSchema: loginSchema,
-    onSubmit: async (values, {setStatus, setSubmitting}) => {
+    onSubmit: async (values, { setStatus, setSubmitting }) => {
       setLoading(true)
       try {
-        const {data: auth} = await login(values.username, values.password)
+        const { data: auth } = await login(values.username, values.password)
         saveAuth(auth)
-        const {data: user} = await getUserByToken(auth.token)
+        const { data: user } = await getUserByToken(auth.token)
         setCurrentUser(user)
-        toast.success('logged in successfully')
+        toast.success('Logged in successfully')
       } catch (error) {
+        let errorMessage = 'An error occurred'
+        if (axios.isAxiosError(error)) {
+          if (error.response && error.response.data) {
+            errorMessage = error.response.data.detail || error.response.data.message || 'Incorrect Credentials'
+          } else {
+            errorMessage = error.message
+          }
+        } else if (error instanceof Error) {
+          errorMessage = error.message
+        }
+        console.log(error)
         saveAuth(undefined)
-        setStatus('The login details are incorrect')
+        setStatus(errorMessage)
         setSubmitting(false)
         setLoading(false)
-        toast.error('Invalid Credentials')
+        toast.error(errorMessage)
       }
     },
   })
+
+  const renderErrorMessage = (field: string) => {
+    return (
+      formik.touched[field] &&
+      formik.errors[field] && (
+        <div className='fv-plugins-message-container'>
+          <span role='alert'>{formik.errors[field]}</span>
+        </div>
+      )
+    )
+  }
 
   return (
     <form
@@ -67,57 +89,40 @@ export function Login() {
           {...formik.getFieldProps('username')}
           className={clsx(
             'form-control bg-transparent',
-            {'is-invalid': formik.touched.username && formik.errors.username},
-            {
-              'is-valid': formik.touched.username && !formik.errors.username,
-            }
+            { 'is-invalid': formik.touched.username && formik.errors.username },
+            { 'is-valid': formik.touched.username && !formik.errors.username }
           )}
           type='text'
           name='username'
           autoComplete='off'
         />
-        {formik.touched.username && formik.errors.username && (
-          <div className='fv-plugins-message-container'>
-            <span role='alert'>{formik.errors.username}</span>
-          </div>
-        )}
+        {renderErrorMessage('username')}
       </div>
       {/* end::Form group */}
 
       {/* begin::Form group */}
       <div className='fv-row mb-3'>
         <label className='form-label fw-bolder text-dark fs-6 mb-0'>Password</label>
-        <input
-          type={viewPassword ? 'text' : 'password'}
-          autoComplete='off'
-          {...formik.getFieldProps('password')}
-          className={clsx(
-            'form-control bg-transparent',
-            {
-              'is-invalid': formik.touched.password && formik.errors.password,
-            },
-            {
-              'is-valid': formik.touched.password && !formik.errors.password,
-            }
-          )}
-        />
-        {formik.touched.password && formik.errors.password && (
-          <div className='fv-plugins-message-container'>
-            <div className='fv-help-block'>
-              <span role='alert'>{formik.errors.password}</span>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className='fv-row mb-1'>
-        <label className='form-label fw-bolder text-dark fs-6 mb-0'>
-          <KTIcon iconName='eye' />
-        </label>
-        <input
-          type='checkbox'
-          checked={viewPassword}
-          onChange={() => setViewPassword(!viewPassword)}
-        />
+        <div className='input-group'>
+          <input
+            type={viewPassword ? 'text' : 'password'}
+            autoComplete='off'
+            {...formik.getFieldProps('password')}
+            className={clsx(
+              'form-control bg-transparent',
+              { 'is-invalid': formik.touched.password && formik.errors.password },
+              { 'is-valid': formik.touched.password && !formik.errors.password }
+            )}
+          />
+          <button
+            type='button'
+            className='btn btn-outline-secondary'
+            onClick={() => setViewPassword(!viewPassword)}
+          >
+            <KTIcon iconName={viewPassword ? 'eye-off' : 'eye'} />
+          </button>
+        </div>
+        {renderErrorMessage('password')}
       </div>
       {/* end::Form group */}
 
@@ -127,7 +132,7 @@ export function Login() {
 
         {/* begin::Link */}
         <Link to='/auth/forgot-password' className='link-primary'>
-          Forgot Password ?
+          Forgot Password?
         </Link>
         {/* end::Link */}
       </div>
@@ -143,7 +148,7 @@ export function Login() {
         >
           {!loading && <span className='indicator-label'>Continue</span>}
           {loading && (
-            <span className='indicator-progress' style={{display: 'block'}}>
+            <span className='indicator-progress' style={{ display: 'block' }}>
               Please wait...
               <span className='spinner-border spinner-border-sm align-middle ms-2'></span>
             </span>

@@ -23,10 +23,9 @@ export function processStatistics(statistics, getMonthByNumbers) {
   if (!statistics) {
     return {dataValues: [], dataKeys: []}
   }
-
-  const dataValues = statistics.map((item) => item.value)
+  const dataValues = statistics.map((item) => item.value !== undefined? item.value : item.count)
   const dataKeys = statistics.map((item) => `${item.year},${getMonthByNumbers(item.month)}`)
-
+ 
   return {dataValues, dataKeys}
 }
 

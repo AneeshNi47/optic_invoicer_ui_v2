@@ -272,7 +272,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
 
   const loadOptions = async (inputValue) => {
     try {
-      if (auth?.token && inputValue) {
+      if (auth?.token && inputValue.length > 3) {
         const response = await fetchSearchedCustomers(auth.token, inputValue, selectCustomerBy)
         const options =
           response &&
@@ -289,13 +289,13 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     } catch (error: any) {
       console.error('Error fetching customers:', error)
       toast.error(error.response.data.error)
-      return [auth?.token, searchInput]
+      return []
     }
   }
 
   const loadOptionsInventory = async (inputValue) => {
     try {
-      if (auth?.token && inputValue) {
+      if (auth?.token && inputValue.length > 3) {
         const response = await fetchSearchedInventory(auth.token, inputValue, selectInventoryBy)
         const options =
           response &&
@@ -311,7 +311,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     } catch (error: any) {
       console.error('Error fetching Inventory:', error)
       toast.error(error.response.data.error)
-      return [auth?.token, searchInventoryInput]
+      return []
     }
   }
 
