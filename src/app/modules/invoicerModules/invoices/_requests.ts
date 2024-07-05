@@ -19,8 +19,35 @@ export function checkSubscription(token: string) {
   return axios.get<SubscriptionResponse>(`${CHECK_SUBSCRIPTION_URL}`, {headers})
 }
 
+export function getInvoices(
+  token: string,
+  next: string | null,
+  page: number,
+  initialLoad: boolean,
+  phone: string | null
+) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  };
+
+  let url: string;
+
+  if (next && !initialLoad) {
+    url = next;
+  } else {
+    url = `${GET_INVOICES_URL}/?page_size=${page}`;
+  }
+
+  if (phone) {
+    console.log(phone,"asd")
+    url += `&phone=${phone}`;
+  }
+  return axios.get<InvoiceModel>(url, { headers });
+}
+
 // Server should return InvoiceModel
-export function getInvoices(token: string, next: string, page: number, initialLoad: boolean) {
+export function searchInvoice(token: string, next: string, page: number, initialLoad: boolean) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,

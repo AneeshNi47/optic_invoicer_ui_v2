@@ -25,6 +25,11 @@ const InventoryTable: React.FC<Props> = ({className}) => {
   const [dataTodisplay, setDataToDisplay] = useState<InventoryItem[] | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
   const {shouldFetchInventory, setShouldFetchInventory} = useCombinedContext()
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>('')
+  const [endDate, setEndDate] = useState<string>('')
+  const [minAmount, setMinAmount] = useState<string>('')
+  const [maxAmount, setMaxAmount] = useState<string>('')
 
   const containerRef = useRef<HTMLDivElement | null>(null)
 
@@ -53,7 +58,8 @@ const InventoryTable: React.FC<Props> = ({className}) => {
           auth.token,
           inventoryItems.next,
           5,
-          shouldFetchInventory
+          shouldFetchInventory,
+          null
         )
         setInventoryItems((prev: any) => ({
           ...prev,
@@ -65,6 +71,36 @@ const InventoryTable: React.FC<Props> = ({className}) => {
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
+      }
+    }
+  }
+  const clearQueries = () => {
+    setSearchQuery('')
+    setMaxAmount('')
+    setMinAmount('')
+    setStartDate('')
+    fetchInventoryData()
+  }
+  const handleSearch = async () => {
+    if (auth?.token) {
+      setLoading(true)
+      try {
+        const responseData = await getInventoryItems(
+          auth.token,
+          inventoryItems.next,
+          5,
+          shouldFetchInventory,
+          searchQuery
+        )
+        setInventoryItems((prev: any) => ({
+          ...prev,
+          ...responseData.data,
+        }))
+        setLoading(false)
+        setLoading(false)
+      } catch (error: any) {
+        toast.error(error.response.data.error)
+        console.error('Error searching data:', error)
       }
     }
   }
@@ -107,6 +143,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
       }
     }
   }, [auth?.token, loading])
+  const shouldRenderButtonClose = maxAmount !== '' || minAmount !== '' || endDate !== '' || searchQuery !== '';
 
   return (
     <div className={`card ${className}`}>
@@ -126,28 +163,43 @@ const InventoryTable: React.FC<Props> = ({className}) => {
           <span className='card-label fw-bold fs-3 mb-1'>Latest Arrivals</span>
           <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new products</span>
         </h3>
-        <div className='card-toolbar'>
-          {/* begin::Menu */}
-          <button
-            type='button'
-            className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
-            data-kt-menu-trigger='click'
-            data-kt-menu-placement='bottom-end'
-            data-kt-menu-flip='top-end'
-          >
-            <KTIcon iconName='category' className='fs-2' />
+        
+        <div className='d-flex align-items-center'>
+          <input
+            type='text'
+            className='form-control me-2'
+            placeholder='Search...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <input
+            type='date'
+            className='form-control me-2'
+            placeholder='End Date'
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+          <input
+            type='number'
+            className='form-control me-2'
+            placeholder='Min Amount'
+            value={minAmount}
+            onChange={(e) => setMinAmount(e.target.value)}
+          />
+          <input
+            type='number'
+            className='form-control me-2'
+            placeholder='Max Amount'
+            value={maxAmount}
+            onChange={(e) => setMaxAmount(e.target.value)}
+          />
+          <button className='me-1 btn btn-primary' onClick={handleSearch}>
+            Search
           </button>
-          <button
-            type='button'
-            className='btn btn-sm btn-icon btn-color-primary btn-active-light-primary'
-            data-kt-menu-trigger='click'
-            data-kt-menu-placement='bottom-end'
-            data-kt-menu-flip='top-end'
-          >
-            <KTIcon iconName='plus' className='fs-2' />
-          </button>
-          <Dropdown1 />
-          {/* end::Menu */}
+          {shouldRenderButtonClose && (
+          <button className='me-1 btn btn-danger' onClick={()=>clearQueries()}>
+            X
+          </button>)}
         </div>
       </div>
       {/* end::Header */}

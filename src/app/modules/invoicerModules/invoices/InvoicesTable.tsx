@@ -1,22 +1,22 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
-import React, {useEffect, useState, useRef} from 'react'
-import {KTIcon} from '../../../../_metronic/helpers'
-import {useAuth} from '../../auth'
-import {getInvoices} from './_requests'
-import {InvoiceModel} from './_models'
-import {InvoiceDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
-import {IndividualInvoice} from './_models'
-import {InvoicePaymentModal} from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
-import {toast} from 'react-toastify'
-import {useCombinedContext} from '../CombinedProvider'
-import {formatDate, downloadInvoiceSlip} from '../utils'
+import React, { useEffect, useState, useRef } from 'react'
+import { KTIcon } from '../../../../_metronic/helpers'
+import { useAuth } from '../../auth'
+import { getInvoices } from './_requests' // Import searchInventory function
+import { InvoiceModel } from './_models'
+import { InvoiceDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
+import { IndividualInvoice } from './_models'
+import { InvoicePaymentModal } from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
+import { toast } from 'react-toastify'
+import { useCombinedContext } from '../CombinedProvider'
+import { formatDate, downloadInvoiceSlip } from '../utils'
 
 type Props = {
   className: string
 }
 
-const InvoicesTable: React.FC<Props> = ({className}) => {
-  const {auth} = useAuth()
+const InvoicesTable: React.FC<Props> = ({ className }) => {
+  const { auth } = useAuth()
   const [invoices, setInvoices] = useState<InvoiceModel | any>({})
   const [showModal, setShowModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
@@ -24,8 +24,13 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   const [loading, setLoading] = useState(false)
   const [dataToDisplay, setDataToDisplay] = useState<Array<IndividualInvoice> | any[]>([])
   const [initialLoad, setInitialLoad] = useState<boolean>(true)
-  const {setShouldFetchInvoice, shouldFetchInvoice} = useCombinedContext()
+  const { setShouldFetchInvoice, shouldFetchInvoice } = useCombinedContext()
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const [searchQuery, setSearchQuery] = useState<string>('')
+  const [startDate, setStartDate] = useState<string>('')
+  const [minAmount, setMinAmount] = useState<string>('')
+  const [maxAmount, setMaxAmount] = useState<string>('')
+
   const handleOpenModal = (values) => {
     setShowModal(true)
     setModalContent(values)
@@ -45,10 +50,11 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   }
 
   const fetchInvoiceData = async () => {
+    console.log(searchQuery)
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInvoices(auth.token, invoices.next, 5, shouldFetchInvoice)
+        const responseData = await getInvoices(auth.token, invoices.next, 5, shouldFetchInvoice, searchQuery)
         setInvoices((prev: any) => ({
           ...prev,
           ...responseData.data,
@@ -71,8 +77,18 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
     }
   }
 
+  const clearQueries = () => {
+    setSearchQuery('')
+    setMaxAmount('')
+    setMinAmount('')
+    setStartDate('')
+    fetchInvoiceData()
+  }
+
+ 
+
   useEffect(() => {
-    if (initialLoad || setShouldFetchInvoice) {
+    if (initialLoad || shouldFetchInvoice) {
       setDataToDisplay([])
       fetchInvoiceData()
       setShouldFetchInvoice(false)
@@ -117,19 +133,54 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
         handleClose={handlePaymentCloseModal}
         modalContent={modalContent}
       />
-      <div className='card-header border-0 pt-5'>
-        <h3 className='card-title align-items-start flex-column'>
-          <span className='card-label fw-bold fs-3 mb-1'>Recent Orders</span>
-          <span className='text-muted mt-1 fw-semibold fs-7'>Over 500 orders</span>
-        </h3>
+      <div className='card-header border-0 pt-5 d-flex justify-content-between align-items-center'>
+        <div>
+          <h3 className='card-title align-items-start flex-column'>
+            <span className='card-label fw-bold fs-3 mb-1'>Recent Orders</span>
+            <span className='text-muted mt-1 fw-semibold fs-7'>Over 500 orders</span>
+          </h3>
+        </div>
+        <div className='d-flex align-items-center'>
+          <input
+            type='text'
+            className='form-control me-2'
+            placeholder='Search...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <input
+            type='date'
+            className='form-control me-2'
+            placeholder='Invoice Date'
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <input
+            type='number'
+            className='form-control me-2'
+            placeholder='Min Amount'
+            value={minAmount}
+            onChange={(e) => setMinAmount(e.target.value)}
+          />
+          <input
+            type='number'
+            className='form-control me-2'
+            placeholder='Max Amount'
+            value={maxAmount}
+            onChange={(e) => setMaxAmount(e.target.value)}
+          />
+          <button className='me-1 btn btn-primary' onClick={fetchInvoiceData}>
+            Search
+          </button>
+          <button className='me-1 btn btn-danger' onClick={clearQueries}>
+            X
+          </button>
+        </div>
       </div>
-      <div className='card-body py-3'>
-        <div
-          className='table-responsive'
-          style={{overflowY: 'auto', maxHeight: '350px'}}
-          ref={containerRef}
-        >
-          <table className='table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3'>
+      <div className='card-body py-3' style={{ overflowY: 'auto', height: 'calc(100vh - 150px)' }}>
+        <div className='table-responsive' ref={containerRef}
+          style={{ maxHeight: '350px'}}>
+          <table className='table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3' style={{ width: '100%' }}>
             <thead>
               <tr className='fw-bold text-muted'>
                 <th className='w-25px'>
@@ -150,7 +201,7 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
               </tr>
             </thead>
             <tbody>
-              {invoices.results &&
+              {dataToDisplay.length > 0 ? (
                 dataToDisplay.map((invoice, index) => (
                   <tr key={index}>
                     <td>
@@ -236,10 +287,17 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
                       </a>
                     </td>
                   </tr>
-                ))}
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={5} className='text-center'>
+                    No results found
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
-          <div style={{height: '10px'}} />
+          <div style={{ height: '10px' }} />
           {loading && <p>Loading...</p>}
         </div>
       </div>
@@ -247,4 +305,4 @@ const InvoicesTable: React.FC<Props> = ({className}) => {
   )
 }
 
-export {InvoicesTable}
+export { InvoicesTable }
