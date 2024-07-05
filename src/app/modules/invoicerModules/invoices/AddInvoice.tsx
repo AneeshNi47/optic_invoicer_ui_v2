@@ -514,12 +514,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                       <th className='ps-4 min-w-50'>Action</th>
                       <th className='ps-4 min-w-100'>Created On</th>
                       <th className='ps-4 min-w-50px'></th>
-                      <th className='ps-4 min-w-50px'>ADD</th>
-                      <th className='ps-4 min-w-50px'>AXIS</th>
-                      <th className='ps-4 min-w-50px'>CYL</th>
-                      <th className='ps-4 min-w-50px'>IPD</th>
-                      <th className='ps-4 min-w-50px'>PRISM</th>
                       <th className='ps-4 min-w-50px'>SPH</th>
+                      <th className='ps-4 min-w-50px'>CYL</th>
+                      <th className='ps-4 min-w-50px'>AXIS</th>
+                      <th className='ps-4 min-w-50px'>PRISM</th>
+                      <th className='ps-4 min-w-50px'>ADD</th>
+                      <th className='ps-4 min-w-50px'>IPD</th>
                       <th className='ps-4 min-w-125px'>Pupillary Distance</th>
                       <th className='ps-4 min-w-125px'>Additional Notes</th>
                     </tr>

@@ -79,32 +79,28 @@ export function PrescriptionTable({prescriptionData}) {
         </tr>
       </td>
       <td>
-        <tr>{prescriptionData.left_add}</tr>
-        <tr>{prescriptionData.right_add}</tr>
+        <tr>{prescriptionData.left_sphere}</tr>
+        <tr>{prescriptionData.right_sphere}</tr>
       </td>
-
-      <td>
-        <tr>{prescriptionData.left_axis}</tr>
-        <tr>{prescriptionData.right_axis}</tr>
-      </td>
-
       <td>
         <tr>{prescriptionData.left_cylinder}</tr>
         <tr>{prescriptionData.right_cylinder}</tr>
       </td>
-
       <td>
-        <tr>{prescriptionData.left_ipd}</tr>
-        <tr>{prescriptionData.right_ipd}</tr>
+        <tr>{prescriptionData.left_axis}</tr>
+        <tr>{prescriptionData.right_axis}</tr>
       </td>
-
       <td>
         <tr>{prescriptionData.left_prism}</tr>
         <tr>{prescriptionData.right_prism}</tr>
       </td>
       <td>
-        <tr>{prescriptionData.left_sphere}</tr>
-        <tr>{prescriptionData.right_sphere}</tr>
+        <tr>{prescriptionData.left_add}</tr>
+        <tr>{prescriptionData.right_add}</tr>
+      </td>
+      <td>
+        <tr>{prescriptionData.left_ipd}</tr>
+        <tr>{prescriptionData.right_ipd}</tr>
       </td>
       <td>{prescriptionData.pupillary_distance}</td>
       <td>{prescriptionData.additional_notes}</td>

@@ -6,18 +6,30 @@ const API_URL = process.env.REACT_APP_API_URL
 
 export const GET_INVENTORY_ITEMS_URL = `${API_URL}/api/inventory`
 
-// Server should return Inventory
-export function getInventoryItems(token: string,next: string, page: number, initialLoad: boolean) {
+export function getInventoryItems(
+  token: string,
+  next: string | null,
+  page: number,
+  initialLoad: boolean,
+  phone: string | null
+) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
-  }
-  if(next && !initialLoad) {
-    return axios.get<InventoryItems>(`${next}`, {headers})
-  }else{
+  };
 
-  return axios.get<InventoryItems>(`${GET_INVENTORY_ITEMS_URL}/?page_size=${page}`, {headers})
+  let url: string;
+
+  if (next && !initialLoad) {
+    url = next;
+  } else {
+    url = `${GET_INVENTORY_ITEMS_URL}/?page_size=${page}`;
+    if (phone) {
+      url += `&phone=${phone}`;
+    }
   }
+
+  return axios.get<InventoryItems>(url, { headers });
 }
 
 // Add Inventory
@@ -32,6 +44,17 @@ export function addInventory(token: string, data: any) {
 
 // update Inventory Qty
 export function updateInventoryQty(token: string, inventory_id, data: any) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  };
+
+  return axios.patch<UpdateInventoryQty[]>(`${GET_INVENTORY_ITEMS_URL}/${inventory_id}/`, data, { headers });
+}
+
+
+// search Inventory Qty
+export function searchInventory(token: string, inventory_id, data: any) {
   const headers = {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
