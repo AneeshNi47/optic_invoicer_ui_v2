@@ -100,7 +100,7 @@ export interface IndividualInvoice {
   date: string
   remarks: string
   delivery_date: string
-  total: string
+  total: any
   discount: string
   advance: string
   advance_payment_mode: string
@@ -109,7 +109,7 @@ export interface IndividualInvoice {
   balance: string
 
   is_active: boolean
-  is_taxable: boolean
+  is_taxable: any
   created_on: string
   updated_on: string
   created_by: number

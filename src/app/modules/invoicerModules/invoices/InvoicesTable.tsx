@@ -1,11 +1,10 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
 import React, { useEffect, useState, useRef } from 'react'
 import { KTIcon } from '../../../../_metronic/helpers'
 import { useAuth } from '../../auth'
 import { getInvoices } from './_requests' // Import searchInventory function
-import { InvoiceModel } from './_models'
+import { InvoiceModel,IndividualInvoice } from './_models'
+import { CreateInvoiceModal } from '../../../../_metronic/partials'
 import { InvoiceDetailsModal } from '../../../../_metronic/partials/modals/create-invoice/InvoiceDetailsModal'
-import { IndividualInvoice } from './_models'
 import { InvoicePaymentModal } from '../../../../_metronic/partials/modals/create-invoice/InvoicePaymentModal'
 import { toast } from 'react-toastify'
 import { useCombinedContext } from '../CombinedProvider'
@@ -19,6 +18,8 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
   const { auth } = useAuth()
   const [invoices, setInvoices] = useState<InvoiceModel | any>({})
   const [showModal, setShowModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [editModalData, setEditModalData] = useState(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [modalContent, setModalContent] = useState<IndividualInvoice | any>({})
   const [loading, setLoading] = useState(false)
@@ -30,6 +31,16 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
   const [startDate, setStartDate] = useState<string>('')
   const [minAmount, setMinAmount] = useState<string>('')
   const [maxAmount, setMaxAmount] = useState<string>('')
+
+
+  const handleOpenEditModal = (invoiceData) => {
+    setEditModalData(invoiceData)
+    setShowEditModal(true)
+  }
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false)
+  }
 
   const handleOpenModal = (values) => {
     setShowModal(true)
@@ -49,19 +60,23 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
     setShowPaymentModal(false)
   }
 
-  const fetchInvoiceData = async () => {
+  const fetchInvoiceData = async (isNewSearch = false) => {
     console.log(searchQuery)
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getInvoices(auth.token, invoices.next, 5, shouldFetchInvoice, searchQuery)
+        const responseData = await getInvoices(auth.token, isNewSearch ? null : invoices.next, 5, shouldFetchInvoice, searchQuery)
         setInvoices((prev: any) => ({
           ...prev,
           ...responseData.data,
         }))
         setLoading(false)
 
-        setDataToDisplay((prev: any) => [...prev, ...(responseData.data as InvoiceModel).results])
+        if (isNewSearch) {
+          setDataToDisplay(responseData.data.results)
+        } else {
+          setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
+        }
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
@@ -82,15 +97,13 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
     setMaxAmount('')
     setMinAmount('')
     setStartDate('')
-    fetchInvoiceData()
+    fetchInvoiceData(true)
   }
-
- 
 
   useEffect(() => {
     if (initialLoad || shouldFetchInvoice) {
       setDataToDisplay([])
-      fetchInvoiceData()
+      fetchInvoiceData(true)
       setShouldFetchInvoice(false)
       setInitialLoad(false)
     }
@@ -123,6 +136,8 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
 
   return (
     <div className={`card ${className}`}>
+
+<CreateInvoiceModal show={showEditModal} handleClose={handleCloseEditModal} invoiceData={editModalData} modalName={`invoice`} />
       <InvoiceDetailsModal
         show={showModal}
         handleClose={handleCloseModal}
@@ -133,13 +148,11 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
         handleClose={handlePaymentCloseModal}
         modalContent={modalContent}
       />
-      <div className='card-header border-0 pt-5 d-flex justify-content-between align-items-center'>
-        <div>
+      <div className='card-header border-0 pt-5'>
           <h3 className='card-title align-items-start flex-column'>
             <span className='card-label fw-bold fs-3 mb-1'>Recent Orders</span>
             <span className='text-muted mt-1 fw-semibold fs-7'>Over 500 orders</span>
           </h3>
-        </div>
         <div className='d-flex align-items-center'>
           <input
             type='text'
@@ -169,7 +182,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
             value={maxAmount}
             onChange={(e) => setMaxAmount(e.target.value)}
           />
-          <button className='me-1 btn btn-primary' onClick={fetchInvoiceData}>
+          <button className='me-1 btn btn-primary' onClick={() => fetchInvoiceData(true)}>
             Search
           </button>
           <button className='me-1 btn btn-danger' onClick={clearQueries}>
@@ -177,23 +190,16 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
           </button>
         </div>
       </div>
-      <div className='card-body py-3' style={{ overflowY: 'auto', height: 'calc(100vh - 150px)' }}>
-        <div className='table-responsive' ref={containerRef}
-          style={{ maxHeight: '350px'}}>
-          <table className='table table-row-bordered table-row-gray-100 align-middle gs-0 gy-3' style={{ width: '100%' }}>
+      <div className='card-body py-3'>
+        <div
+          className='table-responsive'
+          style={{overflowY: 'scroll', maxHeight: '400px'}}
+          ref={containerRef}
+        >
+          {/* begin::Table */}
+          <table className='table align-middle gs-0 gy-5'>
             <thead>
               <tr className='fw-bold text-muted'>
-                <th className='w-25px'>
-                  <div className='form-check form-check-sm form-check-custom form-check-solid'>
-                    <input
-                      className='form-check-input'
-                      type='checkbox'
-                      value='1'
-                      data-kt-check='true'
-                      data-kt-check-target='.widget-13-check'
-                    />
-                  </div>
-                </th>
                 <th className='min-w-150px'>Customer</th>
                 <th className='min-w-120px'>Invoice No.</th>
                 <th className='min-w-120px'>Total</th>
@@ -205,15 +211,6 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
                 dataToDisplay.map((invoice, index) => (
                   <tr key={index}>
                     <td>
-                      <div className='form-check form-check-sm form-check-custom form-check-solid'>
-                        <input
-                          className='form-check-input widget-13-check'
-                          type='checkbox'
-                          value='1'
-                        />
-                      </div>
-                    </td>
-                    <td>
                       <a
                         href='#'
                         className='text-dark fw-bold text-hover-primary fs-6'
@@ -224,7 +221,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
                         {invoice.customer.first_name}
                       </a>
                       <span className='text-muted fw-semibold text-muted d-block fs-7'>
-                        {formatDate(invoice.created_on)}
+                        {invoice.customer.phone}
                       </span>
                     </td>
                     <td>
@@ -249,6 +246,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
                         >
                           {invoice.status}
                         </span>
+                        <span>{formatDate(invoice.created_on)}</span>
                       </span>
                     </td>
                     <td className='text-dark fw-bold text-hover-primary fs-6'>
@@ -258,7 +256,10 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
                       </span>{' '}
                     </td>
                     <td className='text-end'>
-                      <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'>
+                      <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'
+                        onClick={() => {
+                          handleOpenEditModal(invoice)
+                        }}>
                         <KTIcon iconName='pencil' className='fs-3' />
                       </button>
                       <button

@@ -1,139 +1,38 @@
-import React, {useState, useEffect} from 'react'
-import {Formik, Field, Form, ErrorMessage} from 'formik'
+import React, { useState, useEffect } from 'react'
+import { Formik, Field, Form, ErrorMessage } from 'formik'
 import * as Yup from 'yup'
-import {useAuth} from '../../auth'
-import {KTIcon} from '../../../../_metronic/helpers'
-import {SubscriptionResponse} from './_models'
+import { useAuth } from '../../auth'
+import { KTIcon } from '../../../../_metronic/helpers'
+import { SubscriptionResponse } from './_models'
 import AsyncSelect from 'react-select/async'
 import {
   addInvoiceService,
+  updateInvoiceService,
   fetchSearchedCustomers,
   fetchSearchedInventory,
   checkSubscription,
+  getInvoiceObject, // Import the API function to get invoice detail
 } from './_requests'
 import Swal from 'sweetalert2'
-import {toast} from 'react-toastify'
-import {useCombinedContext} from '../CombinedProvider'
-import {formatDate, PrescriptionTable, prescriptionCorrector} from '../utils'
+import { toast } from 'react-toastify'
+import { useCombinedContext } from '../CombinedProvider'
+import { formatDate, PrescriptionTable, prescriptionCorrector } from '../utils'
 
 interface AddInvoiceProps {
-  //   onSubmit: (formData: InvoiceModel) => void;
   handleClose: () => void
+  invoiceData?: any // Add the invoiceData prop for editing
+}
+interface CustomerDetails {
+  phone: string
+  email: string
+  first_name: string
+  last_name: string
+  gender: string
+  prescriptions?: any[] // Add the prescriptions field here
 }
 
-const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
-  interface CustomerDetails {
-    phone: string
-    email: string
-    first_name: string
-    last_name: string
-    gender: string
-  }
-
-  const [searchInput, setSearchInput] = useState('')
-  const [selectedOption, setSelectedOption] = useState<CustomerDetails | any>({})
-  const [customerFieldDisable, setCustomerFieldDisable] = useState(false)
-  const [selectCustomerBy, setSelectCustomerBy] = useState('phone')
-  const [selectInventoryBy, setSelectInventoryBy] = useState('name')
-  const [is_taxable, setIs_taxable] = useState(false)
-  const [tax_percentage, setTaxPercentage] = useState(5)
-  const [selectedPrescription, setSelectedPrescription] = useState(null)
-  const [customerPrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
-  const [searchInventoryInput, setSearchInventoryInput] = useState('')
-  const [selectedInventoryOption, setSelectedInventoryOption] = useState<any>([])
-  const [itemQuantities, setItemQuantities] = useState({})
-  const [totalCost, setTotalCost] = useState(0)
-  const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionResponse | any>({})
-  const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
-
-  const {setShouldFetchInvoice} = useCombinedContext()
-  const {auth} = useAuth()
-  const handleRemoveItem = (itemId) => {
-    setSelectedInventoryOption((prevOptions) => {
-      const updatedOptions = prevOptions.filter((element) => element.id !== itemId)
-      const updatedItemQuantities = {...itemQuantities}
-      delete updatedItemQuantities[itemId]
-
-      setItemQuantities(updatedItemQuantities)
-      return updatedOptions
-    })
-  }
-
-  useEffect(() => {
-    if (auth?.token) {
-      const fetchApi = async () => {
-        try {
-          const responseData = await checkSubscription(auth.token)
-          setSubscriptionDetails(responseData.data)
-          setCreateInvoicePermission(responseData.data.create_invoice_permission)
-        } catch (error) {
-          console.error('Error fetching API', error)
-          // Handle error as needed
-        }
-      }
-
-      fetchApi()
-    }
-  }, [auth?.token])
-
-  useEffect(() => {
-    const total = calculateTotal()
-    setTotalCost(total)
-  }, [selectedInventoryOption, itemQuantities, is_taxable, tax_percentage])
-
-  // Original calculateTotal function
-  const calculateTotal = () => {
-    let subtotal = selectedInventoryOption.reduce((total, item) => {
-      const itemTotal = item.sale_value * (itemQuantities[item.id] || 1)
-      return total + itemTotal
-    }, 0)
-
-    if (is_taxable) {
-      return subtotal + (subtotal * tax_percentage) / 100
-    } else {
-      return subtotal
-    }
-  }
-
-  // New function to calculate total with discount
-  const calculateTotalWithDiscount = (discount) => {
-    const subtotal = calculateTotal() // Use original calculateTotal for subtotal
-    const discountedTotal = subtotal - (discount || 0)
-
-    // Apply tax if taxable
-    if (is_taxable) {
-      return discountedTotal + (discountedTotal * tax_percentage) / 100
-    } else {
-      return discountedTotal
-    }
-  }
-
-  const handleIsTaxableChange = (event, setFieldValue) => {
-    const isChecked = event.target.checked
-    setIs_taxable(isChecked) // Update local state
-    setFieldValue('is_taxable', isChecked) // Update Formik state
-  }
-
-  const handleQuantityChange = (itemId, change) => {
-    setItemQuantities((prevQuantities) => {
-      const newQuantity = (prevQuantities[itemId] || 0) + change
-
-      if (newQuantity <= 0) {
-        // Remove the item from both lists
-        setSelectedInventoryOption((prevOptions) =>
-          prevOptions.filter((option) => option.id !== itemId)
-        )
-        const updatedQuantities = {...prevQuantities}
-        delete updatedQuantities[itemId]
-        return updatedQuantities
-      } else {
-        // Update the quantity
-        return {...prevQuantities, [itemId]: newQuantity}
-      }
-    })
-  }
-
-  const initialValues: any = {
+const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => {
+  const [initialValues, setInitialValues] = useState<any>({
     phone: '',
     email: '',
     first_name: '',
@@ -153,31 +52,188 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     right_ipd: '',
     pupillary_distance: '',
     additional_notes: '',
-    inventory_items: [] as Array<{
-      inventory_item: number
-      quantity: number
-    }>,
+    inventory_items: [],
     date: '',
     remarks: '',
     delivery_date: '',
     discount: 0,
     advance: 0,
+    balance:0,
     advance_payment_mode: 'Cash',
-    tax_percentage: tax_percentage,
-    is_taxable: is_taxable,
+    tax_percentage: 5,
+    is_taxable: false,
+  })
+
+  const [loading, setLoading] = useState(true) // Add loading state
+
+  const [searchInput, setSearchInput] = useState('')
+  const [selectedOption, setSelectedOption] = useState<CustomerDetails | any>({})
+  const [customerFieldDisable, setCustomerFieldDisable] = useState(!!invoiceData)
+  const [selectCustomerBy, setSelectCustomerBy] = useState('phone')
+  const [selectInventoryBy, setSelectInventoryBy] = useState('name')
+  const [is_taxable, setIs_taxable] = useState(initialValues.is_taxable)
+  const [tax_percentage, setTaxPercentage] = useState(initialValues.tax_percentage)
+  const [selectedPrescription, setSelectedPrescription] = useState(null)
+  const [customerPrescriptionDisable, setCustomerPrescriptionDisable] = useState(false)
+  const [searchInventoryInput, setSearchInventoryInput] = useState('')
+  const [selectedInventoryOption, setSelectedInventoryOption] = useState<any>([])
+  const [itemQuantities, setItemQuantities] = useState({})
+  const [totalCost, setTotalCost] = useState(0)
+  const [subscriptionDetails, setSubscriptionDetails] = useState<SubscriptionResponse | any>({})
+  const [createInvoicePermission, setCreateInvoicePermission] = useState(false)
+
+  const { setShouldFetchInvoice } = useCombinedContext()
+  const { auth } = useAuth()
+  const handleRemoveItem = (itemId) => {
+    setSelectedInventoryOption((prevOptions) => {
+      const updatedOptions = prevOptions.filter((element) => element.id !== itemId)
+      const updatedItemQuantities = { ...itemQuantities }
+      delete updatedItemQuantities[itemId]
+
+      setItemQuantities(updatedItemQuantities)
+      return updatedOptions
+    })
   }
 
-  function numberOrNaNValidation(fieldName, min, max) {
-    return Yup.mixed().test(
-      `${fieldName} must be a number between ${min} and ${max} or NaN`,
-      (value) => {
-        if (value === '' || value === undefined) {
-          return true
+  useEffect(() => {
+    if (auth?.token) {
+      const fetchApi = async () => {
+        try {
+          const responseData = await checkSubscription(auth.token)
+          setSubscriptionDetails(responseData.data)
+          setCreateInvoicePermission(responseData.data.create_invoice_permission)
+        } catch (error) {
+          console.error('Error fetching API', error)
         }
-        const numValue = Number(value)
-        return isNaN(numValue) || (numValue >= min && numValue <= max)
       }
-    )
+
+      fetchApi()
+    }
+  }, [auth?.token])
+
+  useEffect(() => {
+    const total = calculateTotal()
+    setTotalCost(total)
+  }, [selectedInventoryOption, itemQuantities, is_taxable, tax_percentage])
+
+  // Fetch invoice detail if invoiceData is provided
+  useEffect(() => {
+    if (auth && invoiceData && invoiceData.id) {
+      const fetchInvoiceDetail = async () => {
+        try {
+          setLoading(true)
+          const response = await getInvoiceObject(auth.token, invoiceData.id)
+          const invoiceDetail = response.data
+          console.log(invoiceDetail)
+          setInitialValues({
+            customer_id:invoiceDetail.customer.id,
+            phone: invoiceDetail.customer.phone,
+            email: invoiceDetail.customer.email|| '',
+            first_name: invoiceDetail.customer.first_name,
+            last_name: invoiceDetail.customer.last_name,
+            gender: invoiceDetail.customer.gender,
+            prescriptionId:invoiceDetail.prescription?.id,
+            left_sphere: invoiceDetail.prescription?.left_sphere || '',
+            right_sphere: invoiceDetail.prescription?.right_sphere || '',
+            left_cylinder: invoiceDetail.prescription?.left_cylinder || '',
+            right_cylinder: invoiceDetail.prescription?.right_cylinder || '',
+            left_axis: invoiceDetail.prescription?.left_axis || '',
+            right_axis: invoiceDetail.prescription?.right_axis || '',
+            left_prism: invoiceDetail.prescription?.left_prism || '',
+            right_prism: invoiceDetail.prescription?.right_prism || '',
+            left_add: invoiceDetail.prescription?.left_add || '',
+            right_add: invoiceDetail.prescription?.right_add || '',
+            left_ipd: invoiceDetail.prescription?.left_ipd || '',
+            right_ipd: invoiceDetail.prescription?.right_ipd || '',
+            pupillary_distance: invoiceDetail.prescription?.pupillary_distance || '',
+            additional_notes: invoiceDetail.prescription?.additional_notes || '',
+            inventory_items: invoiceDetail.inventory_items?.map((item) => ({
+              inventory_item: item.inventory_item.id,
+              quantity: item.quantity,
+            })) || [],
+            date: invoiceDetail.date,
+            remarks: invoiceDetail.remarks,
+            delivery_date: invoiceDetail.delivery_date,
+            discount: invoiceDetail.discount,
+            advance: invoiceDetail.advance,
+            advance_payment_mode: invoiceDetail.advance_payment_mode,
+            tax_percentage: invoiceDetail.tax_percentage,
+            is_taxable: invoiceDetail.is_taxable,
+          })
+          // Setting selectedInventoryOption and itemQuantities states
+        setSelectedInventoryOption(
+          invoiceDetail.inventory_items?.map((item) => ({
+            id: item.inventory_item.id,
+            name: item.inventory_item.name,
+            item_type: item.inventory_item.item_type,
+            sale_value: item.sale_value,
+          })) || []
+        )
+        setItemQuantities(
+          invoiceDetail.inventory_items?.reduce((acc, item) => {
+            acc[item.inventory_item.id] = item.quantity
+            return acc
+          }, {}) || {}
+        )
+          setLoading(false)
+        } catch (error) {
+          console.error('Error fetching invoice detail:', error)
+          toast.error('Error fetching invoice detail')
+          setLoading(false)
+        }
+      }
+
+      fetchInvoiceDetail()
+    } else {
+      setLoading(false)
+    }
+  }, [invoiceData, auth?.token])
+
+  const calculateTotal = () => {
+    let subtotal = selectedInventoryOption.reduce((total, item) => {
+      const itemTotal = item.sale_value * (itemQuantities[item.id] || 1)
+      return total + itemTotal
+    }, 0)
+
+    if (is_taxable) {
+      return subtotal + (subtotal * tax_percentage) / 100
+    } else {
+      return subtotal
+    }
+  }
+
+  const calculateTotalWithDiscount = (discount) => {
+    const subtotal = calculateTotal()
+    const discountedTotal = subtotal - (discount || 0)
+
+    if (is_taxable) {
+      return discountedTotal + (discountedTotal * tax_percentage) / 100
+    } else {
+      return discountedTotal
+    }
+  }
+
+  const handleIsTaxableChange = (event, setFieldValue) => {
+    const isChecked = event.target.checked
+    setIs_taxable(isChecked)
+    setFieldValue('is_taxable', isChecked)
+  }
+
+  const handleQuantityChange = (itemId, change) => {
+    setItemQuantities((prevQuantities) => {
+      const newQuantity = (prevQuantities[itemId] || 0) + change
+
+      if (newQuantity <= 0) {
+        setSelectedInventoryOption((prevOptions) =>
+          prevOptions.filter((option) => option.id !== itemId)
+        )
+        const updatedQuantities = { ...prevQuantities }
+        delete updatedQuantities[itemId]
+        return updatedQuantities
+      } else {
+        return { ...prevQuantities, [itemId]: newQuantity }
+      }
+    })
   }
 
   const validationSchema = Yup.object().shape({
@@ -186,19 +242,19 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     first_name: Yup.string().required('First name is required'),
     last_name: Yup.string(),
     gender: Yup.string().required('Gender is required'),
-    left_sphere: numberOrNaNValidation('Left Sphere', -20, 20),
-    right_sphere: numberOrNaNValidation('Right Sphere', -20, 20),
-    left_cylinder: numberOrNaNValidation('Left Cylinder', -10, 10),
-    right_cylinder: numberOrNaNValidation('Right Cylinder', -10, 10),
-    left_axis: numberOrNaNValidation('Left Axis', 1, 181),
-    right_axis: numberOrNaNValidation('Right axis', 1, 181),
-    left_prism: numberOrNaNValidation('Left Prism', 0, 10),
-    right_prism: numberOrNaNValidation('Right Prism', 0, 10),
-    left_add: numberOrNaNValidation('Left Add', 0, 4),
-    right_add: numberOrNaNValidation('Right Add', 0, 4),
-    left_ipd: numberOrNaNValidation('Left IPD', 10, 100),
-    right_ipd: numberOrNaNValidation('Right IPD', 10, 100),
-    pupillary_distance: numberOrNaNValidation('Pupillary Distance', 10, 100),
+    left_sphere: Yup.number().nullable().min(-20).max(20),
+    right_sphere: Yup.number().nullable().min(-20).max(20),
+    left_cylinder: Yup.number().nullable().min(-10).max(10),
+    right_cylinder: Yup.number().nullable().min(-10).max(10),
+    left_axis: Yup.number().nullable().min(1).max(181),
+    right_axis: Yup.number().nullable().min(1).max(181),
+    left_prism: Yup.number().nullable().min(0).max(10),
+    right_prism: Yup.number().nullable().min(0).max(10),
+    left_add: Yup.number().nullable().min(0).max(4),
+    right_add: Yup.number().nullable().min(0).max(4),
+    left_ipd: Yup.number().nullable().min(10).max(100),
+    right_ipd: Yup.number().nullable().min(10).max(100),
+    pupillary_distance: Yup.number().nullable().min(10).max(100),
     additional_notes: Yup.string(),
     remarks: Yup.string(),
     delivery_date: Yup.string().required('Delivery Date is required'),
@@ -208,19 +264,20 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     tax_percentage: Yup.string(),
   })
 
-  const handleSubmit = async (values, {setSubmitting}) => {
+  const handleSubmit = async (values, { setSubmitting }) => {
     const inventoryItems = Object.entries(itemQuantities).map(([inventory_item, quantity]) => ({
-      inventory_item: Number(inventory_item), // Convert the key to a number if needed
-      quantity: quantity || 1, // Use 0 if quantity is undefined
+      inventory_item: Number(inventory_item),
+      quantity: quantity || 1,
     }))
-    const invoiceData: any = {
+    console.log("asdasd",values)
+    const invoiceDataToSubmit: any = {
       customer: {
         phone: values.phone,
-        email: values.email === "" ? null : values.email,
+        email: values.email === '' ? null : values.email,
         first_name: values.first_name,
         last_name: values.last_name,
         gender: values.gender,
-        ...(values.id && {id: values.id}),
+        ...(values.customer_id && { id: values.customer_id }),
       },
       prescription: {
         left_sphere: prescriptionCorrector(values.left_sphere),
@@ -237,7 +294,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
         right_ipd: prescriptionCorrector(values.right_ipd),
         pupillary_distance: +values.pupillary_distance,
         additional_notes: values.additional_notes,
-        ...(values.prescriptionId && {id: values.prescriptionId}),
+        ...(values.prescriptionId && { id: values.prescriptionId }),
       },
       inventory_items: inventoryItems,
       date: values.date,
@@ -248,21 +305,25 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
       advance_payment_mode: values.advance_payment_mode,
       is_taxable: values.is_taxable,
       tax_percentage: values.tax_percentage,
+      ...(invoiceData && invoiceData.id && { id: invoiceData.id })
     }
 
     if (auth?.token && createInvoicePermission) {
       try {
-        const response = await addInvoiceService(auth?.token, invoiceData)
-        if (response.status === 201) {
-          toast.success('Invoice Added Successfully')
+        const response = invoiceData?.id
+          ? await updateInvoiceService(auth?.token,invoiceDataToSubmit)
+          : await addInvoiceService(auth?.token, invoiceDataToSubmit)
+        if (response.status === 201 || response.status === 200) {
+          toast.success('Invoice Saved Successfully')
           setShouldFetchInvoice(true)
           handleClose()
         } else {
-          toast.error('Unable to add Invoice')
+          toast.error('Unable to save Invoice')
           handleClose()
         }
+        console.log(invoiceDataToSubmit)
       } catch (error: any) {
-        toast.error(error.response.data.error || 'Unable to add invoice')
+        toast.error(error.response.data.error || 'Unable to save invoice')
         handleClose()
       } finally {
         setSubmitting(false)
@@ -301,7 +362,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
           response &&
           response.data &&
           response.data.results.map((inventory) => ({
-            label: `${inventory.name} - ${inventory.qty === 0 ? "No stock Available" : ""}`,
+            label: `${inventory.name} - ${inventory.qty === 0 ? 'No stock Available' : ''}`,
             availability: inventory.qty === 0 ? false : true,
             value: inventory,
             isDisabled: inventory.qty === 0 ? true : false,
@@ -315,11 +376,16 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
     }
   }
 
+  if (loading) {
+    return <div>Loading...</div>
+  }
+
   return (
     <Formik
       initialValues={initialValues}
       validationSchema={validationSchema}
       onSubmit={handleSubmit}
+      enableReinitialize
     >
       {(formikProps) => (
         <Form>
@@ -359,10 +425,10 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                     first_name: selectedOption?.value?.first_name || '',
                     last_name: selectedOption?.value?.last_name || '',
                     gender: selectedOption?.value?.gender || '',
-                    id: selectedOption?.value?.id || '',
+                    customer_id: selectedOption?.value?.id || '',
                   })
 
-                  setSelectedOption({...selectedOption.value})
+                  setSelectedOption({ ...selectedOption.value })
                   setCustomerFieldDisable(true)
                 }}
                 onInputChange={(inputValue) => {
@@ -389,7 +455,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                           if (result.isConfirmed) {
                             Swal.fire({
                               title: 'Confirmed!',
-                              text: 'Your deatils are added for editting.',
+                              text: 'Your details are added for editing.',
                               icon: 'success',
                             })
                             setCustomerFieldDisable(false)
@@ -504,11 +570,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
           <hr />
           {Object.keys(selectedOption).length !== 0 && selectedOption.prescriptions && (
             <div className='card-body py-3'>
-              {/* begin::Table container */}
               <div className='table-responsive'>
-                {/* begin::Table */}
                 <table className='table align-middle gs-0 gy-4'>
-                  {/* begin::Table head */}
                   <thead>
                     <tr className='fw-bold text-muted bg-light'>
                       <th className='ps-4 min-w-50'>Action</th>
@@ -524,21 +587,18 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                       <th className='ps-4 min-w-125px'>Additional Notes</th>
                     </tr>
                   </thead>
-                  {/* end::Table head */}
-                  {/* begin::Table body */}
                   <tbody>
                     {selectedOption.prescriptions.length > 0 &&
                       selectedOption.prescriptions.map((element) => {
                         return (
                           <tr>
-                            <td style={{alignContent: 'center'}}>
+                            <td style={{ alignContent: 'center' }}>
                               <div className='form-check form-check-sm form-check-custom form-check-solid'>
                                 <input
                                   className='form-check-input widget-13-check'
                                   type='checkbox'
                                   checked={selectedPrescription === element}
                                   onChange={() => {
-                                    // Check if the checkbox is currently checked
                                     const isChecked = selectedPrescription === element
 
                                     if (!isChecked) {
@@ -547,7 +607,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                                       setCustomerPrescriptionDisable(false)
                                     }
 
-                                    // Update form values based on checkbox state
                                     formikProps.setValues({
                                       ...formikProps.values,
                                       left_add: isChecked ? '' : element?.left_add || '',
@@ -555,25 +614,18 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                                       left_axis: isChecked ? '' : element?.left_axis || '',
                                       right_axis: isChecked ? '' : element?.right_axis || '',
                                       left_cylinder: isChecked ? '' : element?.left_cylinder || '',
-                                      right_cylinder: isChecked
-                                        ? ''
-                                        : element?.right_cylinder || '',
+                                      right_cylinder: isChecked ? '' : element?.right_cylinder || '',
                                       left_ipd: isChecked ? '' : element?.left_ipd || '',
                                       right_ipd: isChecked ? '' : element?.right_ipd || '',
                                       left_prism: isChecked ? '' : element?.left_prism || '',
                                       right_prism: isChecked ? '' : element?.right_prism || '',
                                       left_sphere: isChecked ? '' : element?.left_sphere || '',
                                       right_sphere: isChecked ? '' : element?.right_sphere || '',
-                                      pupillary_distance: isChecked
-                                        ? ''
-                                        : element?.pupillary_distance || '',
-                                      additional_notes: isChecked
-                                        ? ''
-                                        : element?.additional_notes || '',
+                                      pupillary_distance: isChecked ? '' : element?.pupillary_distance || '',
+                                      additional_notes: isChecked ? '' : element?.additional_notes || '',
                                       prescriptionId: isChecked ? '' : element?.id || '',
                                     })
 
-                                    // Toggle the selected prescription state
                                     setSelectedPrescription((prevSelected) =>
                                       prevSelected === element ? null : element
                                     )
@@ -799,7 +851,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                 defaultOptions
                 onChange={(selectedOption: any | {}) => {
                   setSelectedInventoryOption((prev) => {
-                    // Add the selected inventory item if it's not already included
                     const isAlreadySelected = prev.some(
                       (item) => item.id === selectedOption.value.id
                     )
@@ -809,9 +860,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                     return prev
                   })
                   setItemQuantities((prevQuantities) => {
-                    // Set the quantity to 1 if this item is not already in the quantities object
                     if (!prevQuantities[selectedOption.value.id]) {
-                      return {...prevQuantities, [selectedOption.value.id]: 1}
+                      return { ...prevQuantities, [selectedOption.value.id]: 1 }
                     }
                     return prevQuantities
                   })
@@ -824,11 +874,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
           </div>
           {selectedInventoryOption.length > 0 && (
             <div className='card-body py-3'>
-              {/* begin::Table container */}
               <div className='table-responsive'>
-                {/* begin::Table */}
                 <table className='table align-middle gs-0 gy-4'>
-                  {/* begin::Table head */}
                   <thead>
                     <tr className='fw-bold text-muted bg-light'>
                       <th className='min-w-200px'>Item name</th>
@@ -843,7 +890,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                   <tbody>
                     {selectedInventoryOption.length > 0 &&
                       selectedInventoryOption.map((element) => {
-                        const itemId = element.id // Assuming each item has a unique id
+                        const itemId = element.id
 
                         return (
                           <tr key={itemId}>
@@ -891,11 +938,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
                         )
                       })}
                   </tbody>
-                  {/* end::Table body */}
                 </table>
-                {/* end::Table */}
               </div>
-              {/* end::Table container */}
             </div>
           )}
 
@@ -916,14 +960,15 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
               class='form-check-input'
               type='checkbox'
               checked={formikProps.values.is_taxable}
+              disabled={!!invoiceData}
               onChange={(e) => handleIsTaxableChange(e, formikProps.setFieldValue)}
             />
             <span className='toggle-slider'></span>
             <label className='form-check-label'>Tax Invoice</label>
           </div>
 
-          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-3'>
+          <div className='row' style={{ display: 'flex', alignItems: 'center' }}>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-3'>
               Date Of Delivery
             </h4>
 
@@ -937,7 +982,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
               <ErrorMessage name='delivery_date' component='div' className='error-message' />
             </div>
 
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-3'>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-3'>
               Discount
             </h4>
 
@@ -957,8 +1002,8 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
             </div>
           </div>
 
-          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+          <div className='row' style={{ display: 'flex', alignItems: 'center' }}>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-8'>
               Total
             </h4>
 
@@ -975,11 +1020,10 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
             </div>
           </div>
 
-          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+          <div className='row' style={{ display: 'flex', alignItems: 'center' }}>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-8'>
               Advance
             </h4>
-
             <div className='form-group col-md-4'>
               <Field
                 type='number'
@@ -991,8 +1035,24 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
             </div>
           </div>
 
-          <div className='row' style={{display: 'flex', alignItems: 'center'}}>
-            <h4 style={{textAlign: 'right', marginBottom: 0}} className='form-group col-md-8'>
+          <div className='row' style={{ display: 'flex', alignItems: 'center' }}>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-8'>
+              Balance
+            </h4>
+            <div className='form-group col-md-4'>
+              <Field
+                type='number'
+                name='balance'
+                value={totalCost - formikProps.values.advance}
+                className='form-control my-2'
+                disabled={!!invoiceData}
+              />
+              <ErrorMessage name='balance' component='div' className='error-message' />
+            </div>
+            {totalCost - formikProps.values.advance<0 ? <p style={{color:'red'}}>Refund required</p>:""}
+          </div>
+          <div className='row' style={{ display: 'flex', alignItems: 'center' }}>
+            <h4 style={{ textAlign: 'right', marginBottom: 0 }} className='form-group col-md-8'>
               Payment Mode
             </h4>
             <div className='form-group col-md-4'>
@@ -1024,8 +1084,7 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({handleClose}) => {
             {!createInvoicePermission && (
               <div className='form-group col-md-12 text-center mt-2'>
                 <span className='text-danger'>
-                  Your {subscriptionDetails ? subscriptionDetails.subscription_type : '-'}{' '}
-                  subscription has ended, please contact the administrator to add more invoices.
+                  Your {subscriptionDetails ? subscriptionDetails.subscription_type : '-'} subscription has ended, please contact the administrator to add more invoices.
                 </span>
               </div>
             )}

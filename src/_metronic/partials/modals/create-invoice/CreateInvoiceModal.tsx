@@ -18,13 +18,14 @@ type Props = {
   show: boolean
   handleClose: () => void
   modalName: string
+  invoiceData?: any // Add invoiceData prop
   // Add additional props as required
 }
 
 // Mapping modal names to their corresponding titles and components
-const getModalConfigMap = (handleClose: () => void): Record<string, ModalConfig> => ({
+const getModalConfigMap = (handleClose: () => void, invoiceData?: any): Record<string, ModalConfig> => ({
   inventory: {title: 'Add Inventory', component: <AddInventory handleClose={handleClose} />},
-  invoice: {title: 'Add Invoice', component: <AddInvoice handleClose={handleClose} />},
+  invoice: { title: invoiceData ? 'Edit Invoice' : 'Add Invoice', component: <AddInvoice handleClose={handleClose} invoiceData={invoiceData} />},
   admin: {title: 'Add Organization', component: <AddOrganizations handleClose={handleClose} />},
   'wholesale-inventory': {
     title: 'Add Wholesale Inventory',
@@ -40,8 +41,8 @@ const getModalConfigMap = (handleClose: () => void): Record<string, ModalConfig>
   },
 })
 
-const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName /*, other props */}) => {
-  const modalConfigMap = getModalConfigMap(handleClose)
+const CreateInvoiceModal: React.FC<Props> = ({show, handleClose, modalName,invoiceData /*, other props */}) => {
+  const modalConfigMap = getModalConfigMap(handleClose,invoiceData)
   const modalConfig = modalConfigMap[modalName]
 
   if (!modalConfig) {
