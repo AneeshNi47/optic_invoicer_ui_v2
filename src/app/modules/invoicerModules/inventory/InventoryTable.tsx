@@ -1,7 +1,6 @@
 /* eslint-disable jsx-a11y/anchor-is-valid */
 import React, {useState, useEffect, useRef} from 'react'
-import {KTIcon, toAbsoluteUrl} from '../../../../_metronic/helpers'
-import {Dropdown1} from '../../../../_metronic/partials'
+import {KTIcon} from '../../../../_metronic/helpers'
 import {useAuth} from '../../auth'
 import {getInventoryItems} from './_requests'
 import {InventoryDetailsModal} from '../../../../_metronic/partials/modals/create-invoice/InventoryDetailsModal'
@@ -163,7 +162,6 @@ const InventoryTable: React.FC<Props> = ({className}) => {
           <span className='card-label fw-bold fs-3 mb-1'>Latest Arrivals</span>
           <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new products</span>
         </h3>
-        
         <div className='d-flex align-items-center'>
           <input
             type='text'
@@ -201,56 +199,28 @@ const InventoryTable: React.FC<Props> = ({className}) => {
             X
           </button>)}
         </div>
-      </div>
-      {/* end::Header */}
-      {/* begin::Body */}
+      </div> 
       <div className='card-body py-3'>
-        {/* begin::Table container */}
         <div
           className='table-responsive'
-          style={{overflowY: 'auto', maxHeight: '450px'}}
+          style={{overflowY: 'scroll', maxHeight: '400px'}}
           ref={containerRef}
         >
           {/* begin::Table */}
           <table className='table align-middle gs-0 gy-5'>
-            {/* begin::Table head */}
             <thead>
-              <tr>
-                <th className='p-0 w-50px'></th>
-                <th className='p-0 min-w-120px'>
-                  <h4>Name</h4>
-                </th>
-                <th className='p-0 min-w-120px'>
-                  <h4>Brand</h4>
-                </th>
-                <th className='p-0 min-w-125px'>
-                  <h4>Cost Value</h4>
-                </th>
-                <th className='p-0 min-w-90px'>
-                  <h4>Quantity</h4>
-                </th>
-                <th className='p-0 min-w-50px'>
-                  <h4>Info</h4>
-                </th>
+              <tr className='fw-bold text-muted'>
+                <th className='min-w-150px'>Name</th>
+                <th className='min-w-150px'>Brand</th>
+                <th className='min-w-150px'>Cost Value</th>
+                <th className='min-w-150px'>Quantity</th>
+                <th className='min-w-150px'>Info</th>
               </tr>
             </thead>
-            {/* end::Table head */}
-            {/* begin::Table body */}
             <tbody>
               {inventoryItems.results &&
                 dataTodisplay.map((item, index) => (
                   <tr key={index}>
-                    <td>
-                      <div className='symbol symbol-50px me-2'>
-                        <span className='symbol-label'>
-                          <img
-                            src={toAbsoluteUrl('/media/svg/brand-logos/plurk.svg')}
-                            className='h-50 align-self-center'
-                            alt=''
-                          />
-                        </span>
-                      </div>
-                    </td>
                     <td>
                       <a
                         href='#'

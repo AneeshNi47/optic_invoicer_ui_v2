@@ -32,7 +32,7 @@ const InvoicePage = () => {
           element={
             <>
               <PageTitle breadcrumbs={widgetsBreadCrumbs}>Invoices</PageTitle>
-              <InvoicesTable className='custom-list' />
+              <InvoicesTable className='custom-list d-flex px-5 py-4' />
             </>
           }
         />

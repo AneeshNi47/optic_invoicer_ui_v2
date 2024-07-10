@@ -79,6 +79,16 @@ export function addInvoiceService(token: string, data: InvoiceModel) {
   return axios.post<InvoiceModel[]>(`${GET_INVOICES_URL}/create/`, data, {headers})
 }
 
+export function updateInvoiceService(token: string, data: InvoiceModel) {
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Token ${token}`,
+  }
+
+  return axios.post<InvoiceModel[]>(`${GET_INVOICES_URL}/update/`, data, {headers})
+}
+
+
 export function fetchSearchedCustomers(token: string, value: string, selectCustomerBy: string) {
   const headers = {
     'Content-Type': 'application/json',
