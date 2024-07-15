@@ -7,7 +7,8 @@ export const GET_INVOICES_URL = `${API_URL}/api/invoice`
 export const GET_CUSTOMER_URL = `${API_URL}/api/search_customer`
 export const GET_INVENTORY_URL = `${API_URL}/api/search_inventory`
 export const POST_PAYMENT_URL = `${API_URL}/api/invoice-payment`
-export const FILE_DOWNLOAD_URL = `${API_URL}/api/invoice/customer-pdf/`
+export const CUSTOMER_FILE_DOWNLOAD_URL = `${API_URL}/api/invoice/customer-pdf/`
+export const FILE_DOWNLOAD_URL = `${API_URL}/api/invoice/pdf/`
 export const CHECK_SUBSCRIPTION_URL = `${API_URL}/api/subscription_check`
 
 // Server should return InvoiceModel
@@ -40,7 +41,6 @@ export function getInvoices(
   }
 
   if (phone) {
-    console.log(phone,"asd")
     url += `&phone=${phone}`;
   }
   return axios.get<InvoiceModel>(url, { headers });
@@ -66,7 +66,6 @@ export function getInvoiceObject(token: string, id: string) {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  console.log('id', id) 
   return axios.get<IndividualInvoice>(`${GET_INVOICES_URL}/${id}`, {headers})
 }
 

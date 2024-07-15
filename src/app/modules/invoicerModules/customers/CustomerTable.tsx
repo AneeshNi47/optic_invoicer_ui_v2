@@ -19,6 +19,7 @@ const CustomerTable: React.FC<Props> = ({className}) => {
   const [loading, setLoading] = useState(false)
   const [dataToDisplay, setDataToDisplay] = useState<any[]>([])
   const [showModal, setShowModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [modalContent, setModalContent] = useState<any>({})
 
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -32,16 +33,20 @@ const CustomerTable: React.FC<Props> = ({className}) => {
     setShowModal(false)
   }
 
-  const fetchInventoryData = async () => {
+  const fetchCustomerData = async (isNewSearch = false) => {
     if (auth?.token) {
       setLoading(true)
       try {
-        const responseData = await getCustomerItems(auth.token, customerItems.next, 5)
+        const responseData = await getCustomerItems(auth.token,  isNewSearch ? null : customerItems.next, 5, searchQuery)
         setCustomerItems((prev: any) => ({
           ...prev,
           ...responseData.data,
         }))
-        setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
+        if (isNewSearch) {
+          setDataToDisplay(responseData.data.results)
+        } else {
+          setDataToDisplay((prev: any) => [...prev, ...responseData.data.results])
+        }
       } catch (error: any) {
         toast.error(error.response.data.error)
         console.error('Error fetching data:', error)
@@ -50,8 +55,14 @@ const CustomerTable: React.FC<Props> = ({className}) => {
     }
   }
 
+  const clearQueries = () => {
+    setSearchQuery('')
+    fetchCustomerData(true)
+  }
+
+
   useEffect(() => {
-    fetchInventoryData()
+    fetchCustomerData()
   }, [auth?.token])
 
   useEffect(() => {
@@ -62,7 +73,7 @@ const CustomerTable: React.FC<Props> = ({className}) => {
         containerRef.current.scrollTop + containerRef.current.clientHeight >=
           containerRef.current.scrollHeight - SCROLL_THRESHOLD
       if (isScrollingDown && !loading && customerItems.next) {
-        fetchInventoryData()
+        fetchCustomerData()
       }
     }
 
@@ -91,6 +102,21 @@ const CustomerTable: React.FC<Props> = ({className}) => {
           <span className='card-label fw-bold fs-3 mb-1'>Latest Arrivals</span>
           <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new products</span>
         </h3>
+        <div className='d-flex align-items-center'>
+          <input
+            type='text'
+            className='form-control me-2'
+            placeholder='Search...'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button className='me-1 btn btn-primary' onClick={() => fetchCustomerData(true)}>
+            Search
+          </button>
+          <button className='me-1 btn btn-danger' onClick={()=>clearQueries()}>
+            X
+          </button> 
+        </div>
         <div className='card-toolbar'>
           {/* begin::Menu */}
           <button
