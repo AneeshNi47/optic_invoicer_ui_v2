@@ -61,7 +61,6 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
   }
 
   const fetchInvoiceData = async (isNewSearch = false) => {
-    console.log(searchQuery)
     if (auth?.token) {
       setLoading(true)
       try {
@@ -161,6 +160,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
+          {/* 
           <input
             type='date'
             className='form-control me-2'
@@ -181,7 +181,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
             placeholder='Max Amount'
             value={maxAmount}
             onChange={(e) => setMaxAmount(e.target.value)}
-          />
+          />*/}
           <button className='me-1 btn btn-primary' onClick={() => fetchInvoiceData(true)}>
             Search
           </button>
@@ -256,7 +256,7 @@ const InvoicesTable: React.FC<Props> = ({ className }) => {
                       </span>{' '}
                     </td>
                     <td className='text-end'>
-                      <button className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'
+                      <button disabled={invoice.status==="Paid"}className='btn btn-icon btn-bg-light btn-color-primary btn-active-color-primary btn-sm me-1'
                         onClick={() => {
                           handleOpenEditModal(invoice)
                         }}>

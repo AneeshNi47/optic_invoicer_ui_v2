@@ -162,6 +162,7 @@ const InventoryTable: React.FC<Props> = ({className}) => {
           <span className='card-label fw-bold fs-3 mb-1'>Latest Arrivals</span>
           <span className='text-muted mt-1 fw-semibold fs-7'>More than 100 new products</span>
         </h3>
+       {/*
         <div className='d-flex align-items-center'>
           <input
             type='text'
@@ -197,8 +198,8 @@ const InventoryTable: React.FC<Props> = ({className}) => {
           {shouldRenderButtonClose && (
           <button className='me-1 btn btn-danger' onClick={()=>clearQueries()}>
             X
-          </button>)}
-        </div>
+          </button>)} 
+        </div>*/}
       </div> 
       <div className='card-body py-3'>
         <div

@@ -7,15 +7,24 @@ const API_URL = process.env.REACT_APP_API_URL
 export const GET_CUSTOMER_ITEMS_URL = `${API_URL}/api/customer`
 
 // Server should return Inventory
-export function getCustomerItems(token: string, next: string, page: number) {
+export function getCustomerItems(token: string, next: string, page: number,
+  phone: string | null) {
   const headers = {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', 
     Authorization: `Token ${token}`,
   }
+  let url: string;
+
   if (next) {
-    return axios.get<any>(`${next}`, {headers})
+    url = next;
+  } else {
+    url = `${GET_CUSTOMER_ITEMS_URL}/?page_size=${page}`;
   }
-  return axios.get<any>(`${GET_CUSTOMER_ITEMS_URL}/?page_size=${page}`, {headers})
+
+  if (phone) {
+    url += `&phone=${phone}`;
+  }
+  return axios.get<any>(url, { headers });
 }
 
 // Server should return Inventory
@@ -24,6 +33,5 @@ export function getCustomerObject(token: string, id: number) {
     'Content-Type': 'application/json',
     Authorization: `Token ${token}`,
   }
-  console.log('getting custmoers')
   return axios.get<any>(`${GET_CUSTOMER_ITEMS_URL}/${id}`, {headers})
 }
