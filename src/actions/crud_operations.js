@@ -20,7 +20,6 @@ export const getItems = (modelName, actionType) => (dispatch, getState) => {
 
 export const searchItems =
   (modelName, searchKey, searchValue, actionType) => (dispatch, getState) => {
-    console.log(`searchin ${modelName}`);
     axios
       .get(
         `${BASE_URL}/api/${modelName}?${searchKey}=${searchValue}`,
@@ -106,7 +105,6 @@ export const get_organization = () => (dispatch, getState) => {
   axios
     .get(`${BASE_URL}/api/get_organization`, tokenConfig(getState))
     .then((res) => {
-      console.log("get org", res);
       dispatch({
         type: USER_ORGANIZATION,
         payload: res.data,
