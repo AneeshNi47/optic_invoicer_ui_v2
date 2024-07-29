@@ -30,7 +30,6 @@ export const printInvoice = (modelName, invoice_id, invoice_number) => {
 
 export const getOrganization =
   (modelName, actionType) => (dispatch, getState) => {
-    console.log("getting organization");
     axios
       .get(`${BASE_URL}/api/${modelName}`, tokenConfig(getState))
       .then((res) => {
