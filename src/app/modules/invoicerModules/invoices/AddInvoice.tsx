@@ -124,7 +124,6 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => 
           setLoading(true)
           const response = await getInvoiceObject(auth.token, invoiceData.id)
           const invoiceDetail = response.data
-          console.log(invoiceDetail)
           setInitialValues({
             customer_id:invoiceDetail.customer.id,
             phone: invoiceDetail.customer.phone,
@@ -269,13 +268,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => 
       inventory_item: Number(inventory_item),
       quantity: quantity || 1,
     }))
-    console.log("asdasd",values)
     const invoiceDataToSubmit: any = {
       customer: {
         phone: values.phone,
-        email: values.email === '' ? null : values.email,
-        first_name: values.first_name,
-        last_name: values.last_name,
+        email: values.email === '' ? null : values.email,    
+        first_name: values.first_name || '.',
+        last_name: values.last_name || '.',
         gender: values.gender,
         ...(values.customer_id && { id: values.customer_id }),
       },
@@ -316,15 +314,12 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => 
         if (response.status === 201 || response.status === 200) {
           toast.success('Invoice Saved Successfully')
           setShouldFetchInvoice(true)
-          handleClose()
+          handleClose() // Close the modal only on successful submission
         } else {
           toast.error('Unable to save Invoice')
-          handleClose()
         }
-        console.log(invoiceDataToSubmit)
       } catch (error: any) {
         toast.error(error.response.data.error || 'Unable to save invoice')
-        handleClose()
       } finally {
         setSubmitting(false)
       }
