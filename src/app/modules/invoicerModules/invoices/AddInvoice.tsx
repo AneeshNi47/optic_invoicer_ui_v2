@@ -319,11 +319,43 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => 
           toast.error('Unable to save Invoice')
         }
       } catch (error: any) {
-        toast.error(error.response.data.error || 'Unable to save invoice')
+        const errorMessages = extractErrorMessages(error.response.data)
+        errorMessages.forEach(message => toast.error(message))
       } finally {
         setSubmitting(false)
       }
     }
+  }
+
+  const handlePhoneBlur = async (e, setFieldError) => {
+    const phone = e.target.value;
+    if (phone && auth?.token) {
+      try {
+        const response = await fetchSearchedCustomers(auth.token, phone, 'phone');
+        if (response.data.results.length > 0) {
+          setFieldError('phone', 'This phone number already exists');
+        }
+      } catch (error) {
+        console.error('Error fetching customers:', error);
+      }
+    }
+  };
+
+  const extractErrorMessages = (errorObj: Record<string, any>): string[] => {
+    let messages: string[] = []
+  
+    const getMessages = (obj: Record<string, any>) => {
+      for (let key in obj) {
+        if (typeof obj[key] === 'object') {
+          getMessages(obj[key])
+        } else if (typeof obj[key] === 'string') {
+          messages.push(obj[key])
+        }
+      }
+    }
+  
+    getMessages(errorObj)
+    return messages
   }
 
   const loadOptions = async (inputValue) => {
@@ -512,6 +544,11 @@ const AddInvoice: React.FC<AddInvoiceProps> = ({ handleClose, invoiceData }) => 
                 placeholder='+971XXXXXXX'
                 className='form-control my-2'
                 disabled={customerFieldDisable}
+                
+  onBlur={(e) => {
+    formikProps.handleBlur(e);
+    handlePhoneBlur(e, formikProps.setFieldError);
+  }}
               />
               <ErrorMessage name='phone' component='div' className='error-message' />
             </div>
