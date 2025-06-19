@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  react-app:
+    build: .
+    ports:
+      - "80:80"
+    container_name: react-app
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_BASE_URL=http://localhost:8000
+      - REACT_APP_WS_URL=ws://localhost:8000
+      - REACT_APP_THEME_API_URL=http://localhost:8000
+      - REACT_APP_I18N_CONFIG_KEY=customI18nConfig
+      - REACT_APP_BASE_LAYOUT_CONFIG_KEY=customLayoutConfig
+      - REACT_APP_RECAPTCHA_SITE_KEY=6Lf2Ov8SAAAAAMm1SmzH1GfwyKNAdx0AqFFmGzGZ

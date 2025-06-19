@@ -8,7 +8,7 @@ import {Link} from 'react-router-dom'
 import {PasswordMeterComponent} from '../../../../_metronic/assets/ts/components'
 import {useAuth} from '../core/Auth'
 
-const CAPTCHA_SITE_KEY = process.env.CAPTCHA_SITE_KEY
+const CAPTCHA_SITE_KEY = process.env.REACT_APP_RECAPTCHA_SITE_KEY
 export const site_key = `${CAPTCHA_SITE_KEY}`
 
 const initialValues = {
